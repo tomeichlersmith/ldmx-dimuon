@@ -1,0 +1,11 @@
+# home-like stuff from working in the denv
+.bash_history
+.bash_logout
+.bashrc
+.lesshst
+.profile
+.local
+# build directory
+build/
+# any generated data files
+*.csv
