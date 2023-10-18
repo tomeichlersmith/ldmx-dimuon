@@ -89,7 +89,7 @@ void usage() {
  */
 int main(int argc, char* argv[]) try {
   bool photons{false};
-  double depth{100.};
+  double depth{1.};
   std::string target{"G4_W"};
   double bias{1.};
   double beam{10.};
