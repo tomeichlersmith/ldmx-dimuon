@@ -35,6 +35,8 @@ class PersistParticles {
   Particle mu_minus_;
   /// other extra particles leaving the target
   std::vector<Particle> extra_;
+  /// number of tries it took to create any single event
+  long unsigned int ntries_{0};
   /// number of events that we simulated
   long unsigned int events_started_{0};
   /// number of events with a dark brem in it

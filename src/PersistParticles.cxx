@@ -9,12 +9,14 @@ PersistParticles::PersistParticles(const std::string& out_file)
     events_->Branch("mu_plus", &mu_plus_);
     events_->Branch("mu_minus", &mu_minus_);
     events_->Branch("extra", &extra_);
+    events_->Branch("ntries", ntries_);
 }
 
 PersistParticles::~PersistParticles() {
-  std::cout << "[dimuon-simulate] Able to generate a muon conversion " 
-    << events_completed_ << " / " << events_started_ 
-    << " events" << std::endl;
+  std::cout
+    << "[ dimuon-simulate ]: Generated " << events_completed_
+    << " dimuon events out of " << events_started_ << " requested."
+    << std::endl;
   events_->Write();
   out_.Close();
 }
@@ -26,6 +28,7 @@ void PersistParticles::BeginOfEventAction(const G4Event*) {
   mu_plus_.clear();
   mu_minus_.clear();
   ++events_started_;
+  ++ntries_;
 }
 
 void PersistParticles::PreUserTrackingAction(const G4Track*) {}
@@ -68,5 +71,6 @@ void PersistParticles::EndOfEventAction(const G4Event*) {
   if (incident_.is_valid() and mu_minus_.is_valid() and mu_plus_.is_valid()) {
     ++events_completed_;
     events_->Fill();
+    ntries_ = 0;
   }
 }
