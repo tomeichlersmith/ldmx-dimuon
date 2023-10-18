@@ -21,3 +21,6 @@ and running a bit more ergonomic. After cloning this repository, one could enter
 denv
 xsec-calc
 ```
+
+## References
+- [Dimuon production by laser-wakefield accelerated electrons](https://journals.aps.org/prab/pdf/10.1103/PhysRevSTAB.12.111301)
