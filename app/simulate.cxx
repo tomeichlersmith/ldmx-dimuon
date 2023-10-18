@@ -11,6 +11,7 @@
 #include "G4PhysListFactory.hh"
 #include "G4UserEventAction.hh"
 #include "G4UserTrackingAction.hh"
+#include "G4UserSteppingAction.hh"
 #include "G4RunManager.hh"
 #include "G4NistManager.hh"
 #include "G4UIsession.hh"
@@ -27,11 +28,24 @@ class SilenceGeant : public G4UIsession {
   G4int ReceiveG4cerr(const G4String&) { return 0; }
 };
 
+class SteppingAction : public G4UserSteppingAction {
+  PersistParticles& persister_;
+ public:
+  SteppingAction(PersistParticles& persister)
+    : G4UserSteppingAction(), persister_{persister} {}
+  void UserSteppingAction(const G4Step* step) final override {
+    persister_.UserSteppingAction(step);
+  }
+};
+
 class TrackingAction : public G4UserTrackingAction {
   PersistParticles& persister_;
  public:
   TrackingAction(PersistParticles& persister)
     : G4UserTrackingAction(), persister_{persister} {}
+  void PreUserTrackingAction(const G4Track* track) final override {
+    persister_.PreUserTrackingAction(track);
+  }
   void PostUserTrackingAction(const G4Track* track) final override {
     persister_.PostUserTrackingAction(track);
   }
@@ -162,6 +176,7 @@ int main(int argc, char* argv[]) try {
   run->Initialize();
 
   PersistParticles persister(output);
+  run->SetUserAction(new SteppingAction(persister));
   run->SetUserAction(new TrackingAction(persister));
   run->SetUserAction(new EventAction(persister));
   run->SetUserAction(new Beam(beam, photons));

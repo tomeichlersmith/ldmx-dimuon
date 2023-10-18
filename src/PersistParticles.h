@@ -60,7 +60,23 @@ class PersistParticles {
    */
   void BeginOfEventAction(const G4Event* event);
 
+  /**
+   * Currently does nothing
+   *
+   * Called when a track is about to be processed
+   *
+   * @param[in] track unused
+   */
   void PreUserTrackingAction(const G4Track* track);
+
+  /**
+   * If a particle is a photon, check if it just underwent
+   * the muon-conversion process. If it did, label it as the
+   * parent.
+   *
+   * @param[in] step current step being processed
+   */
+  void UserSteppingAction(const G4Step* step);
 
   /**
    * Check each track after it is processed.
