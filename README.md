@@ -19,5 +19,5 @@ and running a bit more ergonomic. After cloning this repository, one could enter
 `run` this project to start calculating cross sections.
 ```
 denv
-run
+xsec-calc
 ```

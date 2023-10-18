@@ -9,3 +9,4 @@
 build/
 # any generated data files
 *.csv
+*.root

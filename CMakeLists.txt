@@ -14,11 +14,30 @@ include(${Geant4_USE_FILE})
 add_executable(dimuon-xsec-calc app/xsec_calc.cxx)
 target_link_libraries(dimuon-xsec-calc PRIVATE ${Geant4_LIBRARIES})
 
+add_library(DimuonSimulation
+  SHARED
+  src/Particle.cxx
+  src/Hunk.cxx
+  src/PersistParticles.cxx
+  src/Beam.cxx
+  src/GammaPhysics.cxx
+)
+target_include_directories(DimuonSimulation PUBLIC src)
+target_link_libraries(DimuonSimulation PUBLIC ${Geant4_LIBRARIES} ROOT::Core ROOT::TreePlayer)
+root_generate_dictionary(
+  DimuonSimulationEventDict
+  src/Particle.h
+  LINKDEF src/LinkDef.h
+  MODULE DimuonSimulation
+)
+
 add_executable(dimuon-simulate app/simulate.cxx)
-target_link_libraries(dimuon-simulate PRIVATE ${Geant4_LIBRARIES} ROOT::Core ROOT::TreePlayer)
+target_link_libraries(dimuon-simulate PRIVATE DimuonSimulation)
+
 set_target_properties(
-  dimuon-simulate 
+  DimuonSimulation DimuonSimulationEventDict dimuon-simulate
   PROPERTIES CXX_STANDARD 17
              CXX_STANDARD_REQUIRED YES
-             CXX_EXTENSIONS NO)
+             CXX_EXTENSIONS NO
+)
 
