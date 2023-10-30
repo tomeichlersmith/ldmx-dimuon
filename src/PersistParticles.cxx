@@ -13,6 +13,7 @@ PersistParticles::PersistParticles(const std::string& out_file)
     events_->Branch("mu_minus", &mu_minus_);
     events_->Branch("extra", &extra_);
     events_->Branch("ntries", ntries_);
+    events_->Branch("ecal", &ecal_);
 }
 
 PersistParticles::~PersistParticles() {
@@ -30,6 +31,7 @@ void PersistParticles::BeginOfEventAction(const G4Event*) {
   parent_.clear();
   mu_plus_.clear();
   mu_minus_.clear();
+  ecal_.clear();
   ++events_started_;
   ++ntries_;
 }
@@ -59,7 +61,8 @@ void PersistParticles::UserSteppingAction(const G4Step* step) {
   }
 }
 
-void PersistParticles::ScoringPlaneHit(const G4String& name, const G4Step* step) {
+void PersistParticles::NewScoringPlaneHit(const G4String& name, const G4Step* step) {
+  ecal_.emplace_back(step);
 }
 
 void PersistParticles::PostUserTrackingAction(const G4Track* track) {

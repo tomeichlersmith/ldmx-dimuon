@@ -9,6 +9,7 @@
 #include "TTree.h"
 
 #include "Particle.h"
+#include "ScoringPlaneHit.h"
 
 /**
  * user action used to store the sim particles *if* a muon-conversion occurred
@@ -35,6 +36,8 @@ class PersistParticles {
   Particle mu_minus_;
   /// other extra particles leaving the target
   std::vector<Particle> extra_;
+  /// particles entering the ECal
+  std::vector<ScoringPlaneHit> ecal_;
   /// number of tries it took to create any single event
   long unsigned int ntries_{0};
   /// number of events that we simulated
@@ -84,7 +87,7 @@ class PersistParticles {
    * @param[in] name name of the scoring plane hit
    * @param[in] step current G4Step that happened in the plane
    */
-  void ScoringPlaneHit(const G4String& name, const G4Step* step);
+  void NewScoringPlaneHit(const G4String& name, const G4Step* step);
 
   /**
    * Check each track after it is processed.

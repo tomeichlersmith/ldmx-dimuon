@@ -17,7 +17,7 @@ class Particle {
   ClassDef(Particle, 1);
  public:
   Particle() = default;
-  ~Particle() = default;
+  virtual ~Particle() = default;
   /**
    * reset the particle to blank state
    */
