@@ -21,6 +21,7 @@ add_library(DimuonSimulation
   src/PersistParticles.cxx
   src/Beam.cxx
   src/GammaPhysics.cxx
+  src/ScoringPlaneSD.cxx
 )
 target_include_directories(DimuonSimulation PUBLIC src)
 target_link_libraries(DimuonSimulation PUBLIC ${Geant4_LIBRARIES} ROOT::Core ROOT::TreePlayer)

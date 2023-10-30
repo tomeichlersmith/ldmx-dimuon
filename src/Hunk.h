@@ -2,6 +2,8 @@
 
 #include "G4VUserDetectorConstruction.hh"
 
+#include "ScoringPlaneSD.h"
+
 /**
  * basic 'hunk' of material in air, the material and its thickness is configurable
  *
@@ -13,19 +15,32 @@ class Hunk : public G4VUserDetectorConstruction {
   double depth_;
   /// name of material to use for volume (findable by G4NistManager)
   std::string material_;
+  /// pointer to SD for ECal scoring plane
+  ScoringPlaneSD* ecal_;
  public:
   /**
    * Create our detector constructor, storing the configuration variables
    */
-  Hunk(double d, const std::string& m);
+  Hunk(double depth, const std::string& material, ScoringPlaneSD* ecal);
 
   /**
    * Construct the geometry
    *
-   * We build the world only slighly larger than the single hunk
-   * of material at its center. The hunk is shifted to be
-   * downstream (along z) of the origin so that the primary generator
-   * can simply shoot from the origin along z.
+   * ```
+   *     |        |         |
+   *     |  Hunk  |         |
+   *     |        |         |
+   *                     ECal SP
+   * z  -d        0        240
+   * ```
+   *
+   * We build the world to represent a rudimentary LDMX
+   * fixed target. The hunk is placed such that its downstream
+   * side is at z=0 similar to the LDMX thin target. Then
+   * we have a few named volumes that don't have a different
+   * material than the World volume but are named so we can
+   * attach "detectors" to them so we can get the outgoing particle
+   * properties at specific, LDMX-important z locations.
    */
   virtual G4VPhysicalVolume* Construct() final override;
 };

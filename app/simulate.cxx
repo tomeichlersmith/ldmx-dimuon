@@ -169,15 +169,22 @@ int main(int argc, char* argv[]) try {
 
   auto run = std::unique_ptr<G4RunManager>(new G4RunManager);
 
-  run->SetUserInitialization(new Hunk(depth,target));
+  PersistParticles persister(output);
+  ScoringPlaneSD ecal("ecal", persister);
+
+  run->SetUserInitialization(
+      new Hunk(
+        depth,
+        target,
+        new ScoringPlaneSD("ecal", persister)
+      )
+  );
 
   G4VModularPhysicsList* physics = new QBBC;
   physics->RegisterPhysics(new GammaPhysics(bias));
   run->SetUserInitialization(physics);
 
   run->Initialize();
-
-  PersistParticles persister(output);
   run->SetUserAction(new SteppingAction(persister));
   run->SetUserAction(new TrackingAction(persister));
   run->SetUserAction(new EventAction(persister));

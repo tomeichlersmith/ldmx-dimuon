@@ -5,10 +5,11 @@
 #include "G4PVPlacement.hh"
 #include "G4LogicalVolume.hh"
 
-Hunk::Hunk(double depth, const std::string& material)
+Hunk::Hunk(double depth, const std::string& material, ScoringPlaneSD* ecal)
   : G4VUserDetectorConstruction(),
     depth_{depth},
-    material_{material}
+    material_{material},
+    ecal_{ecal}
 {}
 
 G4VPhysicalVolume* Hunk::Construct() {
@@ -29,7 +30,8 @@ G4VPhysicalVolume* Hunk::Construct() {
     throw std::runtime_error("Material 'G4_AIR' unknown to G4NistManager.");
   }
 
-  G4double world_half_z = 2*box_half_z+2;
+  static const double ecal_sp = 240*mm;
+  G4double world_half_z = (1+depth_+ecal_sp+1);
   G4Box* solidWorld =
     new G4Box("World", 1.1*box_half_x, 1.1*box_half_y, world_half_z);
 
@@ -48,21 +50,38 @@ G4VPhysicalVolume* Hunk::Construct() {
         0,               //copy number
         false);          //overlaps checking
 
-  G4Box* solidBox = new G4Box("Box",
+  G4Box* solidBox = new G4Box("Hunk",
       box_half_x, box_half_y, box_half_z);
 
   G4LogicalVolume* logicBox = new G4LogicalVolume(solidBox,
-      box_mat, "Box");
+      box_mat, "Hunk");
 
   // providing mother volume attaches us to the world volume
   new G4PVPlacement(0, //no rotation
-      G4ThreeVector(0.,0.,box_half_z+1), //at (0,0,box_half_z+1)
+      G4ThreeVector(0.,0.,-box_half_z), //at (0,0,-d/2)
       logicBox,        //its logical volume
-      "Envelope",      //its name
+      "Hunk",          //its name
       logicWorld,      //its mother  volume
       false,           //no boolean operation
       0,               //copy number
       false);          //overlaps checking
+ 
+  G4Box* solidScoringPlane = new G4Box("ScoringPlane",
+      box_half_x, box_half_y, 1*mm);
+
+  G4LogicalVolume* ecalScoringPlane = new G4LogicalVolume(solidScoringPlane,
+      world_mat, "EcalScoringPlane");
+  ecalScoringPlane->SetSensitiveDetector(ecal_);
+
+  // ECal Scoring Plane
+  new G4PVPlacement(0,
+      G4ThreeVector(0.,0.,ecal_sp),
+      ecalScoringPlane,
+      "EcalScoringPlane",
+      logicWorld,
+      false,
+      0,
+      false);
 
   //always return the physical World
   return physWorld;

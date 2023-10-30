@@ -79,6 +79,14 @@ class PersistParticles {
   void UserSteppingAction(const G4Step* step);
 
   /**
+   * A scoring plane has a hit that should be handled by us
+   *
+   * @param[in] name name of the scoring plane hit
+   * @param[in] step current G4Step that happened in the plane
+   */
+  void ScoringPlaneHit(const G4String& name, const G4Step* step);
+
+  /**
    * Check each track after it is processed.
    *
    * If the track has a secondary via the muon-conversion process

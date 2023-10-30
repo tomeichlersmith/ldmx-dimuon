@@ -59,6 +59,9 @@ void PersistParticles::UserSteppingAction(const G4Step* step) {
   }
 }
 
+void PersistParticles::ScoringPlaneHit(const G4String& name, const G4Step* step) {
+}
+
 void PersistParticles::PostUserTrackingAction(const G4Track* track) {
   if (track->GetCreatorProcess() == nullptr) {
     // only the primary has no creator process
