@@ -162,8 +162,10 @@ int main(int argc, char* argv[]) try {
   int num_events = std::stoi(positional[0]);
   std::string output = positional[1];
 
+#if(DEBUG == 0)
   SilenceGeant silence;
   G4UImanager::GetUIpointer()->SetCoutDestination(&silence);
+#endif
 
   auto run = std::unique_ptr<G4RunManager>(new G4RunManager);
 

@@ -24,6 +24,7 @@ add_library(DimuonSimulation
 )
 target_include_directories(DimuonSimulation PUBLIC src)
 target_link_libraries(DimuonSimulation PUBLIC ${Geant4_LIBRARIES} ROOT::Core ROOT::TreePlayer)
+target_compile_definitions(DimuonSimulation PUBLIC "DEBUG=$<IF:$<CONFIG:Debug>,1,0>")
 root_generate_dictionary(
   DimuonSimulationEventDict
   src/Particle.h
