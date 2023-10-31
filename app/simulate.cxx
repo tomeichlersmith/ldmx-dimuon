@@ -12,6 +12,7 @@
 #include "G4UserEventAction.hh"
 #include "G4UserTrackingAction.hh"
 #include "G4UserSteppingAction.hh"
+#include "G4UserStackingAction.hh"
 #include "G4RunManager.hh"
 #include "G4NistManager.hh"
 #include "G4UIsession.hh"
@@ -33,7 +34,7 @@ class SteppingAction : public G4UserSteppingAction {
  public:
   SteppingAction(PersistParticles& persister)
     : G4UserSteppingAction(), persister_{persister} {}
-  void UserSteppingAction(const G4Step* step) final override {
+  void UserSteppingAction(const G4Step* step) final {
     persister_.UserSteppingAction(step);
   }
 };
@@ -43,10 +44,10 @@ class TrackingAction : public G4UserTrackingAction {
  public:
   TrackingAction(PersistParticles& persister)
     : G4UserTrackingAction(), persister_{persister} {}
-  void PreUserTrackingAction(const G4Track* track) final override {
+  void PreUserTrackingAction(const G4Track* track) final {
     persister_.PreUserTrackingAction(track);
   }
-  void PostUserTrackingAction(const G4Track* track) final override {
+  void PostUserTrackingAction(const G4Track* track) final {
     persister_.PostUserTrackingAction(track);
   }
 };
@@ -56,11 +57,24 @@ class EventAction : public G4UserEventAction {
  public:
   EventAction(PersistParticles& persister)
     : G4UserEventAction(), persister_{persister} {}
-  void BeginOfEventAction(const G4Event* event) final override {
+  void BeginOfEventAction(const G4Event* event) final {
     persister_.BeginOfEventAction(event);
   }
-  void EndOfEventAction(const G4Event* event) final override {
+  void EndOfEventAction(const G4Event* event) final {
     persister_.EndOfEventAction(event);
+  }
+};
+
+class StackingAction : public G4UserStackingAction {
+  PersistParticles& persister_;
+ public:
+  StackingAction(PersistParticles& persister)
+    : G4UserStackingAction(), persister_{persister} {}
+  G4ClassificationOfNewTrack ClassifyNewTrack(const G4Track* track, const G4ClassificationOfNewTrack& current_classification) final {
+    return persister_.ClassifyNewTrack(track, current_classification);
+  }
+  void NewStage() final {
+    persister_.NewStage();
   }
 };
 
@@ -87,9 +101,11 @@ void usage() {
     "  -d, --depth   : thickness of target in mm\n"
     "  -t, --target  : target material, must be findable by G4NistManager\n"
     "                  (defaults to G4_W)\n"
+    "  --no-filter   : DON'T filter events for muon-conversions\n"
+    "                  default without this flag is to only keep events with muon-conversions\n"
     "  -b, --bias    : biasing factor to use to encourage muon-conv\n"
-    "                  default is 1. (i.e. no biasing)\n"
-    "  -e, --beam    : Beam energy in GeV (defaults to 10)\n"
+    "                  default if this flag is not provided is no biasing\n"
+    "  -e, --beam    : Beam energy in GeV (defaults to 8)\n"
     "  --mat-list    : print the full list from G4NistManager and exit\n"
     "\n"
     << std::flush;
@@ -102,11 +118,12 @@ void usage() {
  * standard initialization and running procedure for Geant4.
  */
 int main(int argc, char* argv[]) try {
+  bool filter{true};
   bool photons{false};
   double depth{1.};
   std::string target{"G4_W"};
   double bias{1.};
-  double beam{10.};
+  double beam{8.};
   std::vector<std::string> positional;
   for (int i_arg{1}; i_arg < argc; ++i_arg) {
     std::string arg{argv[i_arg]};
@@ -121,6 +138,8 @@ int main(int argc, char* argv[]) try {
       return 0;
     } else if (arg == "--photons") {
       photons = true;
+    } else if (arg == "--no-filter") {
+      filter = false;
     } else if (arg == "-t" or arg == "--target") {
       if (i_arg+1 >= argc) {
         std::cerr << arg << " requires an argument after it" << std::endl;
@@ -169,7 +188,7 @@ int main(int argc, char* argv[]) try {
 
   auto run = std::unique_ptr<G4RunManager>(new G4RunManager);
 
-  PersistParticles persister(output);
+  PersistParticles persister(output, std::optional{1.});
   ScoringPlaneSD ecal("ecal", persister);
 
   run->SetUserInitialization(
@@ -189,6 +208,7 @@ int main(int argc, char* argv[]) try {
   run->SetUserAction(new TrackingAction(persister));
   run->SetUserAction(new EventAction(persister));
   run->SetUserAction(new Beam(beam, photons));
+  run->SetUserAction(new StackingAction(persister));
 
   run->BeamOn(num_events);
 

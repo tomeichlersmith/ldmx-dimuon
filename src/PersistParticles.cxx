@@ -1,10 +1,11 @@
 #include "PersistParticles.h"
 
+#include "G4RunManager.hh"
 #include "G4Gamma.hh"
 #include "G4VProcess.hh"
 
-PersistParticles::PersistParticles(const std::string& out_file)
-  : out_{out_file.c_str(), "RECREATE"} {
+PersistParticles::PersistParticles(const std::string& out_file, std::optional<double> filter_threshold)
+  : out_{out_file.c_str(), "RECREATE"}, filter_threshold_{filter_threshold} {
     out_.cd();
     events_ = new TTree("dimuon_events","dimuon_events");
     events_->Branch("incident", &incident_);
@@ -25,7 +26,22 @@ PersistParticles::~PersistParticles() {
   out_.Close();
 }
 
+bool PersistParticles::success() {
+  if (filter_threshold_.has_value()) return true;
+  return (
+      incident_.is_valid() and
+      parent_.is_valid() and
+      mu_plus_.is_valid() and
+      mu_minus_.is_valid() and
+      (
+       mu_plus_.energy() > filter_threshold_.value() or
+       mu_minus_.energy() > filter_threshold_.value()
+      )
+  );
+}
+
 void PersistParticles::BeginOfEventAction(const G4Event*) {
+  no_more_particles_above_threshold_ = false;
   extra_.clear();
   incident_.clear();
   parent_.clear();
@@ -36,14 +52,47 @@ void PersistParticles::BeginOfEventAction(const G4Event*) {
   ++ntries_;
 }
 
+G4ClassificationOfNewTrack PersistParticles::ClassifyNewTrack(const G4Track* track, const G4ClassificationOfNewTrack& current_classification) {
+  /**
+   * track has kinetic energy above our filtering threshold
+   * and so we tell Geant4 to process it as soon as possible
+   */
+  if (track->GetKineticEnergy() > filter_threshold_.value_or(0.)) {
+    return fUrgent;
+  }
+  /**
+   * track is below the threshold and so we push it onto
+   * the waiting stack unless there are no more particles
+   * above the threshold
+   */
+  if (no_more_particles_above_threshold_) return current_classification;
+  return fWaiting;
+}
+
 void PersistParticles::PreUserTrackingAction(const G4Track*) {}
 
 void PersistParticles::UserSteppingAction(const G4Step* step) {
-  // don't bother with non-photons
+  /**
+   * if we are below the filtering threshold (when filtering) then 
+   * we should just process like normal
+   */
+  if (no_more_particles_above_threshold_) return;
+  /**
+   * suspend tracks that step from above the threshold to
+   * below it in order to get to the decision as fast as possible
+   */
+  auto pre_energy{step->GetPreStepPoint()->GetKineticEnergy()};
+  auto post_energy{step->GetPostStepPoint()->GetKineticEnergy()};
+  if (pre_energy >= filter_threshold_.value_or(0.) and 
+      post_energy < filter_threshold_.value_or(0.)) {
+    step->GetTrack()->SetTrackStatus(fSuspend);
+  }
+  /**
+   * Further checks are only searching for the muon-conversion,
+   * so we don't bother with any non-photons.
+   */
   if (step->GetTrack()->GetParticleDefinition() != G4Gamma::Gamma()) return;
-  // check secondaries to see if the process was muon-conversion
   auto secondaries{step->GetSecondaryInCurrentStep()};
-  // leave if no secondaries exist
   if (secondaries == nullptr or secondaries->size() == 0) return;
   for (const G4Track* secondary : *secondaries) {
     const G4VProcess* creator{secondary->GetCreatorProcess()};
@@ -96,8 +145,15 @@ void PersistParticles::PostUserTrackingAction(const G4Track* track) {
   }
 }
 
+void PersistParticles::NewStage() {
+  no_more_particles_above_threshold_ = true;
+  if (not success()) {
+    G4RunManager::GetRunManager()->AbortEvent();
+  }
+}
+
 void PersistParticles::EndOfEventAction(const G4Event*) {
-  if (incident_.is_valid() and parent_.is_valid() and mu_minus_.is_valid() and mu_plus_.is_valid()) {
+  if (success()) {
     ++events_completed_;
     events_->Fill();
     ntries_ = 0;

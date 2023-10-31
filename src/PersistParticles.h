@@ -1,9 +1,12 @@
 #pragma once
 
+#include <optional>
+
 #include "G4MuonMinus.hh"
 #include "G4MuonPlus.hh"
 #include "G4Track.hh"
 #include "G4Event.hh"
+#include "G4ClassificationOfNewTrack.hh"
 
 #include "TFile.h"
 #include "TTree.h"
@@ -44,16 +47,38 @@ class PersistParticles {
   long unsigned int events_started_{0};
   /// number of events with a dark brem in it
   long unsigned int events_completed_{0};
+  /// minimum energy of a muon to have to keep the event
+  std::optional<double> filter_threshold_;
+  /// flag keeping track of current stage of simulated event
+  bool no_more_particles_above_threshold_;
  public:
   /**
-   * Open the output CSV and write the header row
+   * Open the output file and set whether we filter or not
+   *
+   * In addition to opening the output file, we create the event tree
+   * and set up the branches we will write our member variables to.
    */
-  PersistParticles(const std::string& out_file);
+  PersistParticles(const std::string& out_file, std::optional<double> filter_threshold);
 
   /**
    * Print out the number of events with a dark brem compared to the requested number
+   *
+   * Additionally, we make sure to write the output events tree and
+   * close the output file.
    */
   ~PersistParticles();
+
+  /**
+   * Check on if an event is successful
+   *
+   * An event is defined as successful if either
+   * of the following are true.
+   * 1. We are not filtering in which case all events
+   *    should be considered successful and thus kept
+   * 2. The incident, parent, mu+, and mu- particles
+   *    are all valid (i.e. we have found a muon-conversion)
+   */
+  bool success();
 
   /**
    * Clear the map of particles so that the new event doesn't
@@ -62,6 +87,24 @@ class PersistParticles {
    * @param[in] event unused
    */
   void BeginOfEventAction(const G4Event* event);
+
+  /**
+   * Classify a track that is about to be processed
+   *
+   * Geant4 slightly mis-names this function since sometimes
+   * tracks that aren't new will end up being put into this
+   * function. This occurs if they are put onto the waiting stack
+   * after being partially processed.
+   *
+   * What we do here is we put all the tracks below our filtering
+   * threshold onto the waiting stack until there are no more
+   * particles above the threshold. This forces the particles
+   * above the filtering threshold to be processed first and
+   * gives us an opportunity in NewStage to check if the event
+   * has been successful before the entire shower has been
+   * simulated.
+   */
+  G4ClassificationOfNewTrack ClassifyNewTrack(const G4Track* track, const G4ClassificationOfNewTrack& current_classification);
 
   /**
    * Currently does nothing
@@ -100,7 +143,21 @@ class PersistParticles {
   void PostUserTrackingAction(const G4Track* track);
 
   /**
+   * Abort the event early if it hasn't been successful yet
+   *
+   * NewStage is called when all tracks on the Urgent stack
+   * have been processed. For our purposes, this means all
+   * particles with total energy above the filtering threshold
+   * have been processed and therefore if we have not successfully
+   * produced a muon-conversion yet, we do not have enough energy
+   * to do so and so we should abort the event.
+   */
+  void NewStage();
+
+  /**
    * Check and write if successful
+   *
+   * @see success for how successful is defined
    */
   void EndOfEventAction(const G4Event* event);
 };  // PersistDarkBremProducts

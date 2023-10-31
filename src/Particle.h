@@ -28,6 +28,12 @@ class Particle {
   bool is_valid() const {
     return valid;
   }
+  /**
+   * Get the total energy of the particle
+   */
+  double energy() const {
+    return momentum[0];
+  }
 
   /**
    * "Assign" a G4Track to this Particle.
