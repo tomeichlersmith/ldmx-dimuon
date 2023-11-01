@@ -6,6 +6,7 @@
 .profile
 .local
 .python_history
+.root_hist
 # build directory
 build/
 # any generated data files
