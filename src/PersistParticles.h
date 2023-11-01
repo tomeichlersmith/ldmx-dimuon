@@ -12,7 +12,6 @@
 #include "TTree.h"
 
 #include "Particle.h"
-#include "ScoringPlaneHit.h"
 
 /**
  * user action used to store the sim particles *if* a muon-conversion occurred
@@ -40,7 +39,7 @@ class PersistParticles {
   /// other extra particles leaving the target
   std::vector<Particle> extra_;
   /// particles entering the ECal
-  std::vector<ScoringPlaneHit> ecal_;
+  std::vector<Particle> ecal_;
   /// number of tries it took to create any single event
   long unsigned int ntries_{0};
   /**

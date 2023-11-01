@@ -54,25 +54,13 @@ def loadup(fp):
             'momentum' : ak.zip({
                 c : subbranch(c)
                 for c in ['px','py','pz','energy']
-            }, with_name = 'Momentum4D')
-        })
-        return ak.zip(d, with_name='Particle')
-    
-    def scoring_plane_hit(name, single = False):
-        subbranch = _create_subbranch(name, single)
-        d = {
-            b : subbranch(b)
-            for b in [
-                'track_id'
-            ]
-        }
-        d.update({
+            }, with_name = 'Momentum4D'),
             'position' : ak.zip({
                 c : subbranch(c)
-                for c in ['x', 'y', 'z', 't']
-            }, with_name = 'Vector4D')
+                for c in ['x','y','z','t']
+            }, with_name = 'Vector4D'),
         })
-        return ak.zip(d, with_name='ScoringPlaneHit')
+        return ak.zip(d, with_name='Particle')
     
     d = {
         name : particle(name)
@@ -84,6 +72,6 @@ def loadup(fp):
         'ntries' : t['ntries'].array(),
         'weight' : t['weight'].array(),
         'extra' : particle('extra', single=False),
-        'ecal' : scoring_plane_hit('ecal')
+        'ecal' : particle('ecal', single=False)
     })
     return ak.zip(d, depth_limit=1)

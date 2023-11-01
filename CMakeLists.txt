@@ -17,7 +17,6 @@ target_link_libraries(dimuon-xsec-calc PRIVATE ${Geant4_LIBRARIES})
 add_library(DimuonSimulation
   SHARED
   src/Particle.cxx
-  src/ScoringPlaneHit.cxx
   src/Hunk.cxx
   src/PersistParticles.cxx
   src/Beam.cxx
@@ -31,7 +30,6 @@ target_compile_definitions(DimuonSimulation PUBLIC "DEBUG=$<IF:$<CONFIG:Debug>,1
 root_generate_dictionary(
   DimuonSimulationEventDict
   src/Particle.h
-  src/ScoringPlaneHit.h
   LINKDEF src/LinkDef.h
   MODULE DimuonSimulation
 )

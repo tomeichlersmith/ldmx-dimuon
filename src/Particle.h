@@ -14,9 +14,16 @@ class Particle {
   int track_id;
   int pdg_id;
   double px, py, pz, energy;
+  double x, y, z, t;
   ClassDef(Particle, 1);
  public:
   Particle() = default;
+  /**
+   * "Copy" constructor where we create a default particle
+   * and then assign the current values in the passed G4Track
+   * to our members
+   */
+  Particle(const G4Track* track);
   virtual ~Particle() = default;
   /**
    * reset the particle to blank state

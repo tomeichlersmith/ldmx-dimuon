@@ -155,7 +155,7 @@ void PersistParticles::UserSteppingAction(const G4Step* step) {
 }
 
 void PersistParticles::NewScoringPlaneHit(const G4String&, const G4Step* step) {
-  ecal_.emplace_back(step);
+  ecal_.emplace_back(step->GetTrack());
 }
 
 void PersistParticles::PostUserTrackingAction(const G4Track* track) {
