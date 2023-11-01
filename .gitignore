@@ -5,6 +5,7 @@
 .lesshst
 .profile
 .local
+.python_history
 # build directory
 build/
 # any generated data files
