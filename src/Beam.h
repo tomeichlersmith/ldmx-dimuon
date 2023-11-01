@@ -17,9 +17,9 @@ class Beam : public G4VUserPrimaryGeneratorAction {
    * Configure the beam to be of the input energy and particle
    *
    * Shoot along the z axis, the energy is in GeV and we
-   * shoot from the origin.
+   * shoot from 1mm upstream of the hunk (z=-1-hunk_depth).
    */
-  Beam(double energy, bool photons);
+  Beam(double energy, double hunk_depth, bool photons);
 
   /**
    * Start an event by providing primaries

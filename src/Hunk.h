@@ -3,6 +3,7 @@
 #include "G4VUserDetectorConstruction.hh"
 
 #include "ScoringPlaneSD.h"
+#include "MuonConversionBiasing.h"
 
 /**
  * basic 'hunk' of material in air, the material and its thickness is configurable
@@ -11,17 +12,19 @@
  * absolutely sure that we can contain the shower that may contain a dark brem.
  */
 class Hunk : public G4VUserDetectorConstruction {
-  /// depth along beam direction
+  /// depth along beam direction [mm]
   double depth_;
   /// name of material to use for volume (findable by G4NistManager)
   std::string material_;
   /// pointer to SD for ECal scoring plane
   ScoringPlaneSD* ecal_;
+  /// pointer to biasing operator for muon conversion (if we are biasing)
+  MuonConversionBiasing* muon_conversion_biasing_;
  public:
   /**
    * Create our detector constructor, storing the configuration variables
    */
-  Hunk(double depth, const std::string& material, ScoringPlaneSD* ecal);
+  Hunk(double depth, const std::string& material, ScoringPlaneSD* ecal, MuonConversionBiasing* muon_conv_bias);
 
   /**
    * Construct the geometry

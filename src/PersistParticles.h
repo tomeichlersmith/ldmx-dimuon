@@ -43,6 +43,16 @@ class PersistParticles {
   std::vector<ScoringPlaneHit> ecal_;
   /// number of tries it took to create any single event
   long unsigned int ntries_{0};
+  /**
+   * weight for the event
+   *
+   * This calculated by taking the product over all weights
+   * of individual steps. The individual step weights are
+   * calculated by dividing the post-step track weight by
+   * the pre-step track weight. The track weights are propagated
+   * by Geant4.
+   */
+  double weight_{1.};
   /// number of events that we simulated
   long unsigned int events_started_{0};
   /// number of events with a dark brem in it
@@ -104,7 +114,7 @@ class PersistParticles {
    * has been successful before the entire shower has been
    * simulated.
    */
-  G4ClassificationOfNewTrack ClassifyNewTrack(const G4Track* track, const G4ClassificationOfNewTrack& current_classification);
+  G4ClassificationOfNewTrack ClassifyNewTrack(const G4Track* track);
 
   /**
    * Currently does nothing

@@ -7,7 +7,6 @@ void GammaPhysics::ConstructParticle() {}
 
 void GammaPhysics::ConstructProcess() {
   the_process_ = std::make_unique<G4GammaConversionToMuons>();
-  the_process_->SetCrossSecFactor(bias_);
   G4int ret = G4Gamma::Gamma()->GetProcessManager()->AddDiscreteProcess(the_process_.get());
   if (ret < 0) {
     throw std::runtime_error(

@@ -1,8 +1,20 @@
 #include "PersistParticles.h"
 
+#include "G4EventManager.hh"
 #include "G4RunManager.hh"
 #include "G4Gamma.hh"
 #include "G4VProcess.hh"
+
+static void AbortEvent(const std::string& reason) {
+#if(DEBUG==1)
+  std::cout 
+    << "[ event "
+    << G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()
+    << " ] Aborting due to " << reason << std::endl;
+#endif
+  G4RunManager::GetRunManager()->AbortEvent();
+
+}
 
 PersistParticles::PersistParticles(const std::string& out_file, std::optional<double> filter_threshold)
   : out_{out_file.c_str(), "RECREATE"}, filter_threshold_{filter_threshold} {
@@ -15,19 +27,20 @@ PersistParticles::PersistParticles(const std::string& out_file, std::optional<do
     events_->Branch("extra", &extra_);
     events_->Branch("ntries", ntries_);
     events_->Branch("ecal", &ecal_);
+    events_->Branch("weight", weight_);
 }
 
 PersistParticles::~PersistParticles() {
   std::cout
     << "[ dimuon-simulate ]: Generated " << events_completed_
-    << " dimuon events out of " << events_started_ << " requested."
+    << " events out of " << events_started_ << " requested."
     << std::endl;
   events_->Write();
   out_.Close();
 }
 
 bool PersistParticles::success() {
-  if (filter_threshold_.has_value()) return true;
+  if (not filter_threshold_) return true;
   return (
       incident_.is_valid() and
       parent_.is_valid() and
@@ -42,6 +55,7 @@ bool PersistParticles::success() {
 
 void PersistParticles::BeginOfEventAction(const G4Event*) {
   no_more_particles_above_threshold_ = false;
+  weight_ = 1.;
   extra_.clear();
   incident_.clear();
   parent_.clear();
@@ -52,26 +66,55 @@ void PersistParticles::BeginOfEventAction(const G4Event*) {
   ++ntries_;
 }
 
-G4ClassificationOfNewTrack PersistParticles::ClassifyNewTrack(const G4Track* track, const G4ClassificationOfNewTrack& current_classification) {
+G4ClassificationOfNewTrack PersistParticles::ClassifyNewTrack(const G4Track* track) {
   /**
-   * track has kinetic energy above our filtering threshold
-   * and so we tell Geant4 to process it as soon as possible
+   * If the track has kinetic energy above our filtering
+   * threshold or if there are no more particles above the threshold,
+   * we tell Geant4 to process it as soon as possible.
    */
-  if (track->GetKineticEnergy() > filter_threshold_.value_or(0.)) {
+  if (track->GetDefinition()==G4MuonMinus::MuonMinus() or track->GetDefinition()==G4MuonPlus::MuonPlus() or track->GetKineticEnergy() > filter_threshold_.value_or(0.) or no_more_particles_above_threshold_) {
     return fUrgent;
   }
   /**
    * track is below the threshold and so we push it onto
-   * the waiting stack unless there are no more particles
-   * above the threshold
+   * the waiting stack
    */
-  if (no_more_particles_above_threshold_) return current_classification;
   return fWaiting;
 }
 
-void PersistParticles::PreUserTrackingAction(const G4Track*) {}
+void PersistParticles::PreUserTrackingAction(const G4Track* track) {
+  if (track->GetCreatorProcess() == nullptr and not incident_.is_valid()) {
+    incident_ = track;
+    return;
+  }
+
+  /**
+   * If the track is a muon, we inform our storage mechanism that we have found them.
+   */
+  if (track->GetDefinition() == G4MuonMinus::MuonMinus()) {
+    if (mu_minus_.is_valid()) {
+      AbortEvent("more than one muon conversion (second mu- found)");
+      return;
+    }
+    mu_minus_ = track;
+  } else if (track->GetDefinition() == G4MuonPlus::MuonPlus()) {
+    if (mu_plus_.is_valid()) {
+      AbortEvent("more than one muon conversion (second mu+ found)");
+      return;
+    }
+    mu_plus_ = track;
+  }
+}
 
 void PersistParticles::UserSteppingAction(const G4Step* step) {
+  // get the track weights before this step and after this step
+  //  ** these weights include the factors of all upstream step weights **
+  double track_weight_pre_step = step->GetPreStepPoint()->GetWeight();
+  double track_weight_post_step = step->GetPostStepPoint()->GetWeight();
+  //  so, to get _this_ step's weight, we divide post_weight by pre_weight
+  double weight_of_this_step_alone = track_weight_post_step / track_weight_pre_step;
+  // increment the event weight multiplicatively
+  weight_ *= weight_of_this_step_alone;
   /**
    * if we are below the filtering threshold (when filtering) then 
    * we should just process like normal
@@ -102,7 +145,8 @@ void PersistParticles::UserSteppingAction(const G4Step* step) {
       // this step was a muon-conversion, try to assign the
       // current track to be the parent.
       if (parent_.is_valid()) {
-        std::cerr << "More than one mu+mu- parent!" << std::endl;
+        AbortEvent("more than one muon conversion (second parent found)");
+        return;
       }
       parent_ = step->GetTrack();
       return; // no need to check other secondaries
@@ -110,35 +154,17 @@ void PersistParticles::UserSteppingAction(const G4Step* step) {
   }
 }
 
-void PersistParticles::NewScoringPlaneHit(const G4String& name, const G4Step* step) {
+void PersistParticles::NewScoringPlaneHit(const G4String&, const G4Step* step) {
   ecal_.emplace_back(step);
 }
 
 void PersistParticles::PostUserTrackingAction(const G4Track* track) {
-  if (track->GetCreatorProcess() == nullptr) {
-    // only the primary has no creator process
-    incident_ = track;
-    return;
-  } 
-
-  if (track->GetParticleDefinition() == G4MuonMinus::MuonMinus()) {
-    if (mu_minus_.is_valid()) {
-      std::cerr << "More than one mu-!" << std::endl;
-    }
-    mu_minus_ = track;
-    return;
-  }
-
-  if (track->GetParticleDefinition() == G4MuonPlus::MuonPlus()) {
-    if (mu_plus_.is_valid()) {
-      std::cerr << "More than one mu+!" << std::endl;
-    }
-    mu_plus_ = track;
-    return;
-  }
-
   if (track->GetVolume()->GetName() == "World_PV") {
-    // track is ending outside of the box of material
+    // track is ending outside of the box of material, put it into the list
+    // of extra particles if it is not one of the already defined particles
+    int id{track->GetTrackID()};
+    if (id == incident_.id() or id == parent_.id() or id == mu_minus_.id() or id == mu_plus_.id())
+      return;
     extra_.emplace_back();
     extra_.back() = track;
     return;
@@ -148,7 +174,8 @@ void PersistParticles::PostUserTrackingAction(const G4Track* track) {
 void PersistParticles::NewStage() {
   no_more_particles_above_threshold_ = true;
   if (not success()) {
-    G4RunManager::GetRunManager()->AbortEvent();
+    AbortEvent("unsuccessful generation (no muon-conv found or both muons below threshold)");
+    return;
   }
 }
 

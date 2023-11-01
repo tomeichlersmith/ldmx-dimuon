@@ -34,6 +34,12 @@ class Particle {
   double energy() const {
     return momentum[0];
   }
+  /**
+   * Get the track ID of the particle
+   */
+  int id() const {
+    return track_id;
+  }
 
   /**
    * "Assign" a G4Track to this Particle.

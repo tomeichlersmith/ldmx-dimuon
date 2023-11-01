@@ -5,11 +5,12 @@
 #include "G4PVPlacement.hh"
 #include "G4LogicalVolume.hh"
 
-Hunk::Hunk(double depth, const std::string& material, ScoringPlaneSD* ecal)
+Hunk::Hunk(double depth, const std::string& material, ScoringPlaneSD* ecal, MuonConversionBiasing* muon_conv_bias)
   : G4VUserDetectorConstruction(),
     depth_{depth},
     material_{material},
-    ecal_{ecal}
+    ecal_{ecal},
+    muon_conversion_biasing_{muon_conv_bias}
 {}
 
 G4VPhysicalVolume* Hunk::Construct() {
@@ -55,6 +56,7 @@ G4VPhysicalVolume* Hunk::Construct() {
 
   G4LogicalVolume* logicBox = new G4LogicalVolume(solidBox,
       box_mat, "Hunk");
+  if (muon_conversion_biasing_) muon_conversion_biasing_->AttachTo(logicBox);
 
   // providing mother volume attaches us to the world volume
   new G4PVPlacement(0, //no rotation

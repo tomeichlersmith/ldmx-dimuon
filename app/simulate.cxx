@@ -17,6 +17,7 @@
 #include "G4NistManager.hh"
 #include "G4UIsession.hh"
 #include "G4UImanager.hh"
+#include "G4GenericBiasingPhysics.hh"
 
 #include "Beam.h"
 #include "GammaPhysics.h"
@@ -70,8 +71,8 @@ class StackingAction : public G4UserStackingAction {
  public:
   StackingAction(PersistParticles& persister)
     : G4UserStackingAction(), persister_{persister} {}
-  G4ClassificationOfNewTrack ClassifyNewTrack(const G4Track* track, const G4ClassificationOfNewTrack& current_classification) final {
-    return persister_.ClassifyNewTrack(track, current_classification);
+  G4ClassificationOfNewTrack ClassifyNewTrack(const G4Track* track) final {
+    return persister_.ClassifyNewTrack(track);
   }
   void NewStage() final {
     persister_.NewStage();
@@ -99,14 +100,29 @@ void usage() {
     "  -h, --help    : print this usage and exit\n"
     "  --photons     : run using photons (without this flag, assumes electrons)\n"
     "  -d, --depth   : thickness of target in mm\n"
+    "                  default is 0.350259mm (or 0.1X0 of tungsten)\n"
     "  -t, --target  : target material, must be findable by G4NistManager\n"
-    "                  (defaults to G4_W)\n"
-    "  --no-filter   : DON'T filter events for muon-conversions\n"
-    "                  default without this flag is to only keep events with muon-conversions\n"
+    "                  defaults to G4_W (tungsten)\n"
+    "  -f, --filter  : define the filtering threshold in MeV above which one (or both) of the muons must be\n"
+    "                  default is no filtering (i.e. there can be no muons or muons with any energy)\n"
     "  -b, --bias    : biasing factor to use to encourage muon-conv\n"
     "                  default if this flag is not provided is no biasing\n"
     "  -e, --beam    : Beam energy in GeV (defaults to 8)\n"
     "  --mat-list    : print the full list from G4NistManager and exit\n"
+    "\n"
+    "EXAMPLES\n"
+    "  Run an unbiased and unfiltered simulation, keeping all events which can help us\n"
+    "  determine how often particles 'leak' out of the back of the target of the input thickness.\n"
+    "\n"
+    "    g4db-simulate --depth 10*3.50259 --target G4_W --beam 8.0 10000 inclusive_10X0.root\n"
+    "\n"
+    "  Run a simulation specifically biasing and filtering for muon-conversion within the target.\n"
+    "\n"
+    "    g4db-simulate --depth 10*3.50259 --target G4_W --beam 8.0 --bias 1e4 --filter 1000 10000 dimuon_10X0.root\n"
+    "\n"
+    "  Print the list of materials in G4NistManager so we can get find the name for a material we want.\n"
+    "\n"
+    "    g4db-simulate --mat-list | less\n"
     "\n"
     << std::flush;
 }
@@ -118,11 +134,11 @@ void usage() {
  * standard initialization and running procedure for Geant4.
  */
 int main(int argc, char* argv[]) try {
-  bool filter{true};
   bool photons{false};
-  double depth{1.};
+  double depth{0.350259};
   std::string target{"G4_W"};
-  double bias{1.};
+  std::optional<double> bias{};
+  std::optional<double> filter_threshold{};
   double beam{8.};
   std::vector<std::string> positional;
   for (int i_arg{1}; i_arg < argc; ++i_arg) {
@@ -138,8 +154,6 @@ int main(int argc, char* argv[]) try {
       return 0;
     } else if (arg == "--photons") {
       photons = true;
-    } else if (arg == "--no-filter") {
-      filter = false;
     } else if (arg == "-t" or arg == "--target") {
       if (i_arg+1 >= argc) {
         std::cerr << arg << " requires an argument after it" << std::endl;
@@ -158,6 +172,12 @@ int main(int argc, char* argv[]) try {
         return 1;
       }
       bias = std::stod(argv[++i_arg]);
+    } else if (arg == "-f" or arg == "--filter") {
+      if (i_arg+1 >= argc) {
+        std::cerr << arg << " requires an argument after it" << std::endl;
+        return 1;
+      }
+      filter_threshold = std::stod(argv[++i_arg]);
     } else if (arg == "-e" or arg == "--beam") {
       if (i_arg+1 >= argc) {
         std::cerr << arg << " requires an argument after it" << std::endl;
@@ -188,26 +208,32 @@ int main(int argc, char* argv[]) try {
 
   auto run = std::unique_ptr<G4RunManager>(new G4RunManager);
 
-  PersistParticles persister(output, std::optional{1.});
+  PersistParticles persister(output, filter_threshold);
   ScoringPlaneSD ecal("ecal", persister);
 
   run->SetUserInitialization(
       new Hunk(
         depth,
         target,
-        new ScoringPlaneSD("ecal", persister)
+        new ScoringPlaneSD("ecal", persister),
+        bias ? new MuonConversionBiasing(bias.value(), filter_threshold.value_or(0.)) : nullptr
       )
   );
 
   G4VModularPhysicsList* physics = new QBBC;
-  physics->RegisterPhysics(new GammaPhysics(bias));
+  physics->RegisterPhysics(new GammaPhysics);
+  if (bias) {
+    G4GenericBiasingPhysics* biased_physics = new G4GenericBiasingPhysics;
+    biased_physics->Bias("gamma", {"GammaToMuPair"});
+    physics->RegisterPhysics(biased_physics);
+  }
   run->SetUserInitialization(physics);
 
   run->Initialize();
   run->SetUserAction(new SteppingAction(persister));
   run->SetUserAction(new TrackingAction(persister));
   run->SetUserAction(new EventAction(persister));
-  run->SetUserAction(new Beam(beam, photons));
+  run->SetUserAction(new Beam(beam, depth, photons));
   run->SetUserAction(new StackingAction(persister));
 
   run->BeamOn(num_events);

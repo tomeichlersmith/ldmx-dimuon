@@ -10,11 +10,9 @@
 class GammaPhysics : public G4VPhysicsConstructor {
   /// handle to the process, cleaned up when the physics list is desctructed
   std::unique_ptr<G4GammaConversionToMuons> the_process_;
-  /// the amount we should bias the muon-conversion by
-  double bias_;
  public:
-  /// create the physics and store the parameters
-  GammaPhysics(double bias) : bias_{bias} {}
+  /// create the physics
+  GammaPhysics() = default;
 
   /**
    * We don't construct any particles since we are just
