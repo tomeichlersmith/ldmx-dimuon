@@ -25,9 +25,9 @@ PersistParticles::PersistParticles(const std::string& out_file, std::optional<do
     events_->Branch("mu_plus", &mu_plus_);
     events_->Branch("mu_minus", &mu_minus_);
     events_->Branch("extra", &extra_);
-    events_->Branch("ntries", ntries_);
+    events_->Branch("ntries", &ntries_, "ntries/i");
     events_->Branch("ecal", &ecal_);
-    events_->Branch("weight", weight_);
+    events_->Branch("weight", &weight_, "weight/D");
 }
 
 PersistParticles::~PersistParticles() {

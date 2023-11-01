@@ -11,7 +11,7 @@
  */
 class ScoringPlaneHit {
   int track_id;
-  std::array<double, 4> position;
+  double x, y, z, t;
   ClassDef(ScoringPlaneHit, 1);
  public:
   ScoringPlaneHit() = default;
