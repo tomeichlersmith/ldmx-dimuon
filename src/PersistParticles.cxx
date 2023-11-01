@@ -47,8 +47,8 @@ bool PersistParticles::success() {
       mu_plus_.is_valid() and
       mu_minus_.is_valid() and
       (
-       mu_plus_.energy() > filter_threshold_.value() or
-       mu_minus_.energy() > filter_threshold_.value()
+       mu_plus_.total_energy() > filter_threshold_.value() or
+       mu_minus_.total_energy() > filter_threshold_.value()
       )
   );
 }

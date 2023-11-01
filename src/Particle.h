@@ -13,7 +13,7 @@ class Particle {
   bool valid;
   int track_id;
   int pdg_id;
-  std::array<double, 4> momentum;
+  double px, py, pz, energy;
   ClassDef(Particle, 1);
  public:
   Particle() = default;
@@ -31,8 +31,8 @@ class Particle {
   /**
    * Get the total energy of the particle
    */
-  double energy() const {
-    return momentum[0];
+  double total_energy() const {
+    return energy;
   }
   /**
    * Get the track ID of the particle
