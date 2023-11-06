@@ -1,6 +1,27 @@
 #!/bin/bash
 #  generate both inclusive and dimuon samples in parallel
 
+# print each argument on its own line with the first line
+# prefixed with "ERROR: ".
+error() {
+  printf >&2 "\033[1;31mERROR: \033[0m\033[31m%s\n" "$1"
+  shift
+  while [ "$#" -gt "0" ]; do
+    printf >&2 "       %s\n" "$1"
+    shift
+  done
+  printf >&2 "\033[0m"
+}
+info() {
+  printf "\033[32;1m INFO: \033[0m\033[32m%s\n" "$1"
+  shift
+  while [ "$#" -gt "0" ]; do
+    printf '       %s\n' "$1"
+    shift
+  done
+  printf "\033[0m"
+}
+
 usage() {
   cat <<HELP
 
@@ -21,7 +42,7 @@ HELP
 
 if [ "$#" -eq 0 ]; then
   usage
-  echo "ERROR: Need to define at least one depth."
+  error "Need to define at least one depth."
   exit 1
 fi
 
@@ -35,11 +56,11 @@ do
       shift
       ;;
     --help|-h)
-      usage()
+      usage
       exit 0
       ;;
     -*)
-      echo " ERROR: Unrecognized option $1"
+      error "Unrecognized option $1"
       exit 1
       ;;
     *)
@@ -49,21 +70,17 @@ do
   shift
 done
 
-echo ${outdir}
-for d in ${depths}
-do
-  echo ${d}
-done
-exit 0
-
 if [ ! -d ${outdir} ]; then
+  info "Need to create output directory '${outdir}'"
   if ! mkdir ${outdir}; then
+    error "Unable to create output directory '${outdir}'."
     exit 1
   fi
 fi
 
 for depth_X0 in ${depths}
 do
+  info "Simulating target depth ${depth_X0}X0"
   depth_mm="$(python3 -c "print(${depth_X0}*3.50259)")"
   ./build/dimuon-simulate\
     --depth ${depth_mm} \
@@ -74,4 +91,6 @@ do
     --filter 1000 \
     1000000 ${outdir}/dimuon_${depth_X0}.root &> ${outdir}/dimuon_${depth_X0}.log &
 done
+info "Waiting for job completion..."
 wait
+info "done"
