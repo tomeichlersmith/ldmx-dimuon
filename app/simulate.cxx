@@ -208,7 +208,7 @@ int main(int argc, char* argv[]) try {
 
   auto run = std::unique_ptr<G4RunManager>(new G4RunManager);
 
-  PersistParticles persister(output, filter_threshold, bias);
+  PersistParticles persister(output, filter_threshold, bias, target, depth, beam, photons);
   ScoringPlaneSD ecal("ecal", persister);
 
   run->SetUserInitialization(

@@ -58,6 +58,14 @@ class PersistParticles {
   std::optional<double> filter_threshold_;
   /// factor to bias muon-conversion by in material target'
   std::optional<double> bias_factor_;
+  /// target material (as named in G4NistManager)
+  std::string target_;
+  /// depth of target in mm
+  double depth_;
+  /// energy of beam in GeV
+  double beam_;
+  /// whether photons were used (true) or electrons (false)
+  bool photons_;
   /// flag keeping track of current stage of simulated event
   bool no_more_particles_above_threshold_;
  public:
@@ -67,7 +75,7 @@ class PersistParticles {
    * In addition to opening the output file, we create the event tree
    * and set up the branches we will write our member variables to.
    */
-  PersistParticles(const std::string& out_file, std::optional<double> filter_threshold, std::optional<double> bias_factor);
+  PersistParticles(const std::string& out_file, std::optional<double> filter_threshold, std::optional<double> bias_factor, const std::string& target, double depth, double beam, bool photons);
 
   /**
    * Print out the number of events with a dark brem compared to the requested number
