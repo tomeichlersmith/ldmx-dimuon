@@ -1,0 +1,77 @@
+#!/bin/bash
+#  generate both inclusive and dimuon samples in parallel
+
+usage() {
+  cat <<HELP
+
+  Generate inclusive and dimuon samples for varying tungsten target depths.
+
+ USAGE
+  ./app/gen-samples [-h|--help] [-o|--out-dir DIR] DEPTH0 [DEPTH1 ...]
+
+ OPTIONS
+  -h, --help    : print this help and exit
+  -o, --out-dir : write all generated data and log files to DIR
+
+ ARGUMENTS
+  DEPTH : one or more target depths in units of radiation length
+
+HELP
+}
+
+if [ "$#" -eq 0 ]; then
+  usage
+  echo "ERROR: Need to define at least one depth."
+  exit 1
+fi
+
+outdir="$PWD"
+depths=""
+while [ "$#" -gt 0 ]
+do
+  case $1 in
+    --out-dir|-o)
+      outdir="$2"
+      shift
+      ;;
+    --help|-h)
+      usage()
+      exit 0
+      ;;
+    -*)
+      echo " ERROR: Unrecognized option $1"
+      exit 1
+      ;;
+    *)
+      depths="${depths} $1"
+      ;;
+  esac
+  shift
+done
+
+echo ${outdir}
+for d in ${depths}
+do
+  echo ${d}
+done
+exit 0
+
+if [ ! -d ${outdir} ]; then
+  if ! mkdir ${outdir}; then
+    exit 1
+  fi
+fi
+
+for depth_X0 in ${depths}
+do
+  depth_mm="$(python3 -c "print(${depth_X0}*3.50259)")"
+  ./build/dimuon-simulate\
+    --depth ${depth_mm} \
+    10000 ${outdir}/inclusive_${depth_X0}.root &> ${outdir}/inclusive_${depth_X0}.log &
+  ./build/dimuon-simulate \
+    --depth ${depth_mm} \
+    --bias 1e4 \
+    --filter 1000 \
+    1000000 ${outdir}/dimuon_${depth_X0}.root &> ${outdir}/dimuon_${depth_X0}.log &
+done
+wait
