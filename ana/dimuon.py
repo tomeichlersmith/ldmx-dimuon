@@ -88,18 +88,19 @@ def loadup(fp):
     """
 
     with uproot.open(fp) as f:
-        t = f['events']
-    
+        event_tree = f['events']
         d = {
-            name : _particle(_create_subbranch(name))
+            name : _particle(_create_subbranch(event_tree, name))
             for name in [
                 'incident', 'parent', 'mu_plus', 'mu_minus'
             ]
         }
         d.update({
-            'ntries' : t['ntries'].array(),
-            'weight' : t['weight'].array(),
-            'extra' : _particle(_create_subbranch('extra', single=False)),
-            'ecal' : _particle(_create_subbranch('ecal', single=False))
+            'ntries' : event_tree['ntries'].array(),
+            'weight' : event_tree['weight'].array(),
+            'extra' : _particle(_create_subbranch(event_tree, 'extra', single=False)),
+            'ecal' : _particle(_create_subbranch(event_tree, 'ecal', single=False))
         })
-        return ak.zip(d, depth_limit=1)
+        events = ak.zip(d, depth_limit=1)
+        run_params = f['run'].members
+        return run_params, events
