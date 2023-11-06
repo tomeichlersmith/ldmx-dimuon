@@ -19,7 +19,7 @@ static void AbortEvent(const std::string& reason) {
 PersistParticles::PersistParticles(const std::string& out_file, std::optional<double> filter_threshold)
   : out_{out_file.c_str(), "RECREATE"}, filter_threshold_{filter_threshold} {
     out_.cd();
-    events_ = new TTree("dimuon_events","dimuon_events");
+    events_ = new TTree("events","dimuon_events");
     events_->Branch("incident", &incident_);
     events_->Branch("parent", &parent_);
     events_->Branch("mu_plus", &mu_plus_);

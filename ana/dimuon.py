@@ -88,7 +88,7 @@ def loadup(fp):
     """
 
     with uproot.open(fp) as f:
-        t = f['dimuon_events']
+        t = f['events']
     
         d = {
             name : _particle(_create_subbranch(name))
