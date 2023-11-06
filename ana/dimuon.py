@@ -96,11 +96,11 @@ def loadup(fp):
             ]
         }
         d.update({
-            'ntries' : event_tree['ntries'].array(),
             'weight' : event_tree['weight'].array(),
             'extra' : _particle(_create_subbranch(event_tree, 'extra', single=False)),
             'ecal' : _particle(_create_subbranch(event_tree, 'ecal', single=False))
         })
         events = ak.zip(d, depth_limit=1)
         run_params = f['run'].members
+        run_params['eot'] = ak.count(events.weight)/ak.sum(events.weight)*run_params['tries_']
         return run_params, events
