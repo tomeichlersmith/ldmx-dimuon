@@ -17,6 +17,9 @@ import vector
 vector.register_awkward()
 
 
+__version__ = '0.1.0'
+
+
 def _create_subbranch(tree, name, single = True):
     """Create a local Callable object which can be used to access subbranches
     of the input branch 'name'
