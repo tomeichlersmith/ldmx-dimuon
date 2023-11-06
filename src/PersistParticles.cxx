@@ -1,5 +1,7 @@
 #include "PersistParticles.h"
 
+#include "RunHeader.h"
+
 #include "G4EventManager.hh"
 #include "G4RunManager.hh"
 #include "G4Gamma.hh"
@@ -16,8 +18,8 @@ static void AbortEvent(const std::string& reason) {
 
 }
 
-PersistParticles::PersistParticles(const std::string& out_file, std::optional<double> filter_threshold)
-  : out_{out_file.c_str(), "RECREATE"}, filter_threshold_{filter_threshold} {
+PersistParticles::PersistParticles(const std::string& out_file, std::optional<double> filter_threshold, std::optional<double> bias_factor)
+  : out_{out_file.c_str(), "RECREATE"}, filter_threshold_{filter_threshold}, bias_factor_{bias_factor} {
     out_.cd();
     events_ = new TTree("events","dimuon_events");
     events_->Branch("incident", &incident_);
@@ -25,7 +27,6 @@ PersistParticles::PersistParticles(const std::string& out_file, std::optional<do
     events_->Branch("mu_plus", &mu_plus_);
     events_->Branch("mu_minus", &mu_minus_);
     events_->Branch("extra", &extra_);
-    events_->Branch("ntries", &ntries_, "ntries/i");
     events_->Branch("ecal", &ecal_);
     events_->Branch("weight", &weight_, "weight/D");
 }
@@ -35,6 +36,12 @@ PersistParticles::~PersistParticles() {
     << "[ dimuon-simulate ]: Generated " << events_completed_
     << " events out of " << events_started_ << " requested."
     << std::endl;
+  RunHeader rh(
+      events_started_,
+      filter_threshold_,
+      bias_factor_
+  );
+  out_.WriteObject(&rh, "run");
   events_->Write();
   out_.Close();
 }
@@ -63,7 +70,6 @@ void PersistParticles::BeginOfEventAction(const G4Event*) {
   mu_minus_.clear();
   ecal_.clear();
   ++events_started_;
-  ++ntries_;
 }
 
 G4ClassificationOfNewTrack PersistParticles::ClassifyNewTrack(const G4Track* track) {
@@ -183,6 +189,5 @@ void PersistParticles::EndOfEventAction(const G4Event*) {
   if (success()) {
     ++events_completed_;
     events_->Fill();
-    ntries_ = 0;
   }
 }

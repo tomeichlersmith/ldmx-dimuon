@@ -16,6 +16,7 @@ target_link_libraries(dimuon-xsec-calc PRIVATE ${Geant4_LIBRARIES})
 
 add_library(DimuonSimulation
   SHARED
+  src/RunHeader.cxx
   src/Particle.cxx
   src/Hunk.cxx
   src/PersistParticles.cxx
@@ -29,6 +30,7 @@ target_link_libraries(DimuonSimulation PUBLIC ${Geant4_LIBRARIES} ROOT::Core ROO
 target_compile_definitions(DimuonSimulation PUBLIC "DEBUG=$<IF:$<CONFIG:Debug>,1,0>")
 root_generate_dictionary(
   DimuonSimulationEventDict
+  src/RunHeader.h
   src/Particle.h
   LINKDEF src/LinkDef.h
   MODULE DimuonSimulation

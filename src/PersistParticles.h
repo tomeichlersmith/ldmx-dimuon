@@ -40,8 +40,6 @@ class PersistParticles {
   std::vector<Particle> extra_;
   /// particles entering the ECal
   std::vector<Particle> ecal_;
-  /// number of tries it took to create any single event
-  long unsigned int ntries_{0};
   /**
    * weight for the event
    *
@@ -58,6 +56,8 @@ class PersistParticles {
   long unsigned int events_completed_{0};
   /// minimum energy of a muon to have to keep the event
   std::optional<double> filter_threshold_;
+  /// factor to bias muon-conversion by in material target'
+  std::optional<double> bias_factor_;
   /// flag keeping track of current stage of simulated event
   bool no_more_particles_above_threshold_;
  public:
@@ -67,7 +67,7 @@ class PersistParticles {
    * In addition to opening the output file, we create the event tree
    * and set up the branches we will write our member variables to.
    */
-  PersistParticles(const std::string& out_file, std::optional<double> filter_threshold);
+  PersistParticles(const std::string& out_file, std::optional<double> filter_threshold, std::optional<double> bias_factor);
 
   /**
    * Print out the number of events with a dark brem compared to the requested number
