@@ -10,5 +10,6 @@
 # build directory
 build/
 # any generated data files
-*.csv
-*.root
+**.csv
+**.root
+**.log

@@ -1,0 +1,11 @@
+# home-like stuff from running jupyter-scikit-hep here
+.cache
+.ipynb_checkpoints
+.ipython
+.jupyter
+# from loading dimuon.py from here
+__pycache__
+# symlink or copy of jupyter-scikit-hep image
+jupyter-scikit-hep.sif
+# testing notebook hopefully evolving into actual tests
+test.ipynb
