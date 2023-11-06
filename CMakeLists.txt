@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.12)
 
 project(ldmx-dimuon
-  VERSION 0.0.0
+  VERSION 0.1.0
   DESCRIPTION "Test running of the G4GammaConversionToMuons class"
   LANGUAGES CXX)
 
