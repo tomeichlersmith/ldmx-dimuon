@@ -1,7 +1,5 @@
 #pragma once
 
-#include <array>
-
 #include "TObject.h"
 
 #include "G4Track.hh"
@@ -13,6 +11,7 @@ class Particle {
   bool valid;
   int track_id;
   int pdg_id;
+  int parent_id;
   double px, py, pz, energy;
   double x, y, z, t;
   ClassDef(Particle, 1);

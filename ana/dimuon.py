@@ -17,7 +17,7 @@ import vector
 vector.register_awkward()
 
 
-__version__ = '0.1.1'
+__version__ = '0.2.0'
 
 
 def _create_subbranch(tree, name, single = True):
@@ -61,7 +61,7 @@ def _particle(subbranch):
     d = {
         member : subbranch(member)
         for member in [
-            'valid', 'track_id', 'pdg_id'
+            'valid', 'track_id', 'parent_id', 'pdg_id'
         ]
     }
     d.update({

@@ -14,6 +14,7 @@ void Particle::clear() {
 void Particle::operator=(const G4Track* track) {
   this->valid = true;
   this->track_id = track->GetTrackID();
+  this->parent_id = track->GetParentID();
   this->pdg_id = track->GetParticleDefinition()->GetPDGEncoding();
   const G4ThreeVector& direction{track->GetMomentumDirection()};
   G4double kinetic_energy = track->GetKineticEnergy();
