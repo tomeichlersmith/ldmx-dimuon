@@ -17,7 +17,7 @@ import vector
 vector.register_awkward()
 
 
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 
 
 def _create_subbranch(tree, name, single = True):
@@ -106,4 +106,7 @@ def loadup(fp):
         events = ak.zip(d, depth_limit=1)
         run_params = f['run'].members
         run_params['eot'] = ak.count(events.weight)/ak.sum(events.weight)*run_params['tries_']
+        # divide depth by tungsten radiation length to get a nice
+        # labeling number for the sample
+        run_params['depth_x0'] = round(run_params['depth_']/3.50259,1)
         return run_params, events
