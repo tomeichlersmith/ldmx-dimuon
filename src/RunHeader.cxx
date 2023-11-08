@@ -1,5 +1,7 @@
 #include "RunHeader.h"
 
+#include "Version.h"
+
 ClassImp(RunHeader);
 
 RunHeader::RunHeader(
@@ -18,5 +20,8 @@ RunHeader::RunHeader(
     target_{target},
     depth_{depth},
     beam_{beam},
-    photons_{photons}
+    photons_{photons},
+    version_major_{version::MAJOR},
+    version_minor_{version::MINOR},
+    version_patch_{version::PATCH}
 {}

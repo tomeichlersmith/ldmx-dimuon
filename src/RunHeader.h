@@ -26,6 +26,12 @@ class RunHeader {
   double beam_;
   /// whether photons were used (true) or electrons (false)
   bool photons_;
+  /// major version number used to produce this run
+  int version_major_;
+  /// minor version number used to produce this run
+  int version_minor_;
+  /// patch version number used to produce this run
+  int version_patch_;
   ClassDef(RunHeader, 1);
  public:
   /// default constructor necessary for ROOT serialization
