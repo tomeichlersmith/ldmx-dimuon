@@ -169,7 +169,7 @@ void PersistParticles::NewScoringPlaneHit(const G4String&, const G4Step* step) {
 }
 
 void PersistParticles::PostUserTrackingAction(const G4Track* track) {
-  if (track->GetVolume()->GetName() == "World_PV") {
+  if (track->GetVolume()->GetName() == "World") {
     // track is ending outside of the box of material, put it into the list
     // of extra particles if it is not one of the already defined particles
     int id{track->GetTrackID()};
