@@ -8,6 +8,14 @@ Examples
 
 """
 
+
+__version__ = '0.3.0'
+__version_tuple__ = tuple(map(int, __version__.split('.')))
+
+
+import warnings
+
+
 import uproot
 import awkward as ak
 import numpy as np
@@ -15,9 +23,6 @@ import vector
 # register vector with awkward so we can just use special names
 # to get the lorentz behavior we want
 vector.register_awkward()
-
-
-__version__ = '0.2.0'
 
 
 def _create_subbranch(tree, name, single = True):
@@ -91,6 +96,27 @@ def loadup(fp):
     """
 
     with uproot.open(fp) as f:
+        run_params = f['run'].members
+        try:
+            file_version_tuple = (
+                run_params['version_major_'],
+                run_params['version_minor_'],
+                run_params['version_patch_']
+            ) 
+        except KeyError:
+            # no version_* entries in the run header means
+            # the file was written before v0.3.0 so we just
+            # call it v0.2.0
+            file_version_tuple = (0,2,0)
+
+        if file_version_tuple > __version_tuple__:
+            file_version = '.'.join(map(str,file_version_tuple))
+            warnings.warn(
+                f"The loading module version {__version__} is older than "
+                f"the version producing the data file being loaded {file_version}. "
+                "This may break the loading procedure - please update this module."
+            )
+
         event_tree = f['events']
         d = {
             name : _particle(_create_subbranch(event_tree, name))
@@ -104,7 +130,6 @@ def loadup(fp):
             'ecal' : _particle(_create_subbranch(event_tree, 'ecal', single=False))
         })
         events = ak.zip(d, depth_limit=1)
-        run_params = f['run'].members
         run_params['eot'] = ak.count(events.weight)/ak.sum(events.weight)*run_params['tries_']
         # divide depth by tungsten radiation length to get a nice
         # labeling number for the sample
