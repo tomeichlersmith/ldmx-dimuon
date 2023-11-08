@@ -4,15 +4,16 @@ Examples
 ========
 
     import dimuon
-    events = dimuon.loadup(fp)
+    run_header, events = dimuon.loadup(fp)
 
 """
 
 
-__version__ = '0.3.1'
+__version__ = '0.3.2'
 __version_tuple__ = tuple(map(int, __version__.split('.')))
 
 
+from types import SimpleNamespace
 import warnings
 
 
@@ -108,15 +109,20 @@ def loadup(fp):
     ----------
     fp : str, pathlib.Path
         file path to file we want to open and read
+
+    Returns
+    -------
+    (namespace, ak.Array)
+        a tuple of the run header information and the awkward array of events
     """
 
     with uproot.open(fp) as f:
-        run_params = f['run'].members
+        run_header = SimpleNamespace(**f['run'].members)
         try:
             file_version_tuple = (
-                run_params['version_major_'],
-                run_params['version_minor_'],
-                run_params['version_patch_']
+                run_header.version_major_,
+                run_header.version_minor_,
+                run_header.version_patch_
             ) 
         except KeyError:
             # no version_* entries in the run header means
@@ -145,8 +151,8 @@ def loadup(fp):
             'ecal' : _particle(_create_subbranch(event_tree, 'ecal', single=False))
         })
         events = ak.zip(d, depth_limit=1)
-        run_params['eot'] = ak.count(events.weight)/ak.sum(events.weight)*run_params['tries_']
+        run_header.eot =  ak.count(events.weight)/ak.sum(events.weight)*run_header.tries_
         # divide depth by tungsten radiation length to get a nice
         # labeling number for the sample
-        run_params['depth_x0'] = round(run_params['depth_']/3.50259,1)
-        return run_params, events
+        run_header.depth_x0 = round(run_header.depth_/3.50259,1)
+        return run_header, events
