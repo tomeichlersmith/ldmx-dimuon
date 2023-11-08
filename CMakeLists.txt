@@ -14,6 +14,10 @@ include(${Geant4_USE_FILE})
 add_executable(dimuon-xsec-calc app/xsec_calc.cxx)
 target_link_libraries(dimuon-xsec-calc PRIVATE ${Geant4_LIBRARIES})
 
+configure_file(
+  ${PROJECT_SOURCE_DIR}/src/Version.h.in
+  ${PROJECT_BINARY_DIR}/include/Version.h)
+
 add_library(DimuonSimulation
   SHARED
   src/RunHeader.cxx
@@ -25,7 +29,7 @@ add_library(DimuonSimulation
   src/ScoringPlaneSD.cxx
   src/MuonConversionBiasing.cxx
 )
-target_include_directories(DimuonSimulation PUBLIC src)
+target_include_directories(DimuonSimulation PUBLIC src ${PROJECT_BINARY_DIR}/include)
 target_link_libraries(DimuonSimulation PUBLIC ${Geant4_LIBRARIES} ROOT::Core ROOT::TreePlayer)
 target_compile_definitions(DimuonSimulation PUBLIC "DEBUG=$<IF:$<CONFIG:Debug>,1,0>")
 root_generate_dictionary(

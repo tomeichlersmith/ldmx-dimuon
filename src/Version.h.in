@@ -1,0 +1,34 @@
+/**
+ * @file Version.h.in
+ * @brief Configure file used by CMake to generate a header file that defines
+ *        version constants for the software
+ */
+
+#pragma once
+
+#include <string_view>
+
+/**
+ * Housing for variables defined by CMake at configuration.
+ *
+ * The version namespace holds variables that are configured by CMake
+ * when the package is configured during the build process
+ */
+namespace version { 
+
+/**
+ * the recorded CMake version
+ *
+ * This is defined by the VERSION keyword
+ * in the 'project' command in CMakeLists.txt.
+ */
+constexpr std::string_view STRING = "${PROJECT_VERSION}";
+
+/**
+ * the version components as defined in the CMake version
+ */
+const int MAJOR = ${PROJECT_VERSION_MAJOR};
+const int MINOR = ${PROJECT_VERSION_MINOR};
+const int PATCH = ${PROJECT_VERSION_PATCH};
+
+}
