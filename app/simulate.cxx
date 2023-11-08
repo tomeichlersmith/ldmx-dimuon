@@ -23,6 +23,7 @@
 #include "GammaPhysics.h"
 #include "Hunk.h"
 #include "PersistParticles.h"
+#include "Version.h"
 
 class SilenceGeant : public G4UIsession {
   G4UIsession* SessionStart() { return nullptr; }
@@ -97,6 +98,7 @@ void usage() {
     "  OUTPUT     : output ROOT file to write muon-conversion events to\n"
     "\n"
     "OPTIONS\n"
+    "  -v, --version : print the version and exit\n"
     "  -h, --help    : print this usage and exit\n"
     "  --photons     : run using photons (without this flag, assumes electrons)\n"
     "  -d, --depth   : thickness of target in mm\n"
@@ -145,6 +147,9 @@ int main(int argc, char* argv[]) try {
     std::string arg{argv[i_arg]};
     if (arg == "-h" or arg == "--help") {
       usage();
+      return 0;
+    } else if (arg == "-v" or arg == "--version") {
+      std::cout << "g4db-simulate v" << version::STRING << std::endl;
       return 0;
     } else if (arg == "--mat-list") {
       auto nist{G4NistManager::Instance()};
