@@ -9,7 +9,7 @@ Examples
 """
 
 
-__version__ = '0.3.0'
+__version__ = '0.3.1'
 __version_tuple__ = tuple(map(int, __version__.split('.')))
 
 
@@ -80,6 +80,21 @@ def _particle(subbranch):
         }, with_name = 'Vector4D'),
     })
     return ak.zip(d, with_name='Particle')
+
+
+def particle_count(particles, mask_identity):
+    """Add a counting behavior for Particle
+
+    We count particles by counting the number of 'valid' members
+    there are since 'valid' is a fundamental type that ak.count
+    already supports. We ignore the mask_identity argument and
+    let awkward apply its defaults.
+    """
+    return ak.count(particles.valid, highlevel=False, axis=-1)
+
+
+ak.behavior[ak.count, "Particle"] = particle_count
+ak.behavior[ak.num, "Particle"] = particle_count
 
 
 def loadup(fp):
