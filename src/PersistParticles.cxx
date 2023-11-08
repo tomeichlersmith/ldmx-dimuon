@@ -116,6 +116,17 @@ void PersistParticles::PreUserTrackingAction(const G4Track* track) {
   }
 }
 
+static G4String GetVolumeName(const G4StepPoint* point) {
+  const G4VPhysicalVolume* pv{point->GetPhysicalVolume()};
+  return (pv == nullptr ? "nullptr" : pv->GetName());
+}
+
+static bool IsTransiting(const G4String& from_volume, const G4String& to_volume, const G4Step* step) {
+  G4String pre{GetVolumeName(step->GetPreStepPoint())},
+           post{GetVolumeName(step->GetPostStepPoint())};
+  return (pre == from_volume and post == to_volume);
+}
+
 void PersistParticles::UserSteppingAction(const G4Step* step) {
   // get the track weights before this step and after this step
   //  ** these weights include the factors of all upstream step weights **
@@ -125,6 +136,21 @@ void PersistParticles::UserSteppingAction(const G4Step* step) {
   double weight_of_this_step_alone = track_weight_post_step / track_weight_pre_step;
   // increment the event weight multiplicatively
   weight_ *= weight_of_this_step_alone;
+  /**
+   * look for "extra" particles leaving Hunk and entering World
+   *
+   * The goal of a calibration target is to absorb _all_ of the 
+   * normal particles _except_ for the muons we want to use for
+   * calibration, so we put any particle that is not either of
+   * the muons and is leaving the Hunk into the list of "extra"
+   * particles.
+   */
+  int id{step->GetTrack()->GetTrackID()};
+  if (IsTransiting("Hunk", "World", step) and
+      id != mu_minus_.id() and
+      id != mu_plus_.id()) {
+    extra_.emplace_back(step->GetTrack());
+  }
   /**
    * if we are below the filtering threshold (when filtering) then 
    * we should just process like normal
@@ -168,17 +194,7 @@ void PersistParticles::NewScoringPlaneHit(const G4String&, const G4Step* step) {
   ecal_.emplace_back(step->GetTrack());
 }
 
-void PersistParticles::PostUserTrackingAction(const G4Track* track) {
-  if (track->GetVolume()->GetName() == "World") {
-    // track is ending outside of the box of material, put it into the list
-    // of extra particles if it is not one of the already defined particles
-    int id{track->GetTrackID()};
-    if (id == incident_.id() or id == parent_.id() or id == mu_minus_.id() or id == mu_plus_.id())
-      return;
-    extra_.emplace_back();
-    extra_.back() = track;
-    return;
-  }
+void PersistParticles::PostUserTrackingAction(const G4Track* /*track*/) {
 }
 
 void PersistParticles::NewStage() {

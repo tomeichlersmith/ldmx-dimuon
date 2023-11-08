@@ -152,10 +152,7 @@ class PersistParticles {
   /**
    * Check each track after it is processed.
    *
-   * If the track has a secondary via the muon-conversion process
-   * or if the track is a secondary of the muon-conversion process
-   * or if the track's endpoint is outside the material hunk,
-   * we choose to keep the track.
+   * Currently does nothing.
    */
   void PostUserTrackingAction(const G4Track* track);
 
