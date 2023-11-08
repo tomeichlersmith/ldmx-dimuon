@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.12)
 
 project(ldmx-dimuon
-  VERSION 0.2.0
-  DESCRIPTION "Test running of the G4GammaConversionToMuons class"
+  VERSION 0.3.0
+  DESCRIPTION "Studying usage of thick, calibration target to generate di-muon events"
   LANGUAGES CXX)
 
 find_package(ROOT 6.16 CONFIG REQUIRED)
