@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.12)
 
 project(ldmx-dimuon
-  VERSION 0.3.0
+  VERSION 0.4.0
   DESCRIPTION "Studying usage of thick, calibration target to generate di-muon events"
   LANGUAGES CXX)
 
