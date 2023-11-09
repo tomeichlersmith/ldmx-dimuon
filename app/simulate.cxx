@@ -110,6 +110,8 @@ void usage() {
     "  -b, --bias    : biasing factor to use to encourage muon-conv\n"
     "                  default if this flag is not provided is no biasing\n"
     "  -e, --beam    : Beam energy in GeV (defaults to 8)\n"
+    "  -s, --seed    : set seed for Geant4's random number generator\n"
+    "                  default is 0 so consecutive runs without changing anything will produce identical results\n"
     "  --mat-list    : print the full list from G4NistManager and exit\n"
     "\n"
     "EXAMPLES\n"
@@ -143,6 +145,7 @@ int main(int argc, char* argv[]) try {
   std::optional<double> filter_threshold{};
   double beam{8.};
   std::vector<std::string> positional;
+  long seed{0};
   for (int i_arg{1}; i_arg < argc; ++i_arg) {
     std::string arg{argv[i_arg]};
     if (arg == "-h" or arg == "--help") {
@@ -189,6 +192,12 @@ int main(int argc, char* argv[]) try {
         return 1;
       }
       beam = std::stod(argv[++i_arg]);
+    } else if (arg == "-s" or arg == "--seed") {
+      if (i_arg+1 >= argc) {
+        std::cerr << arg << " requires an argument after it" << std::endl;
+        return 1;
+      }
+      seed = std::stoi(argv[++i_arg]);
     } else if (arg[0] == '-') {
       std::cerr << arg << " is not a recognized option" << std::endl;
       return 1;
@@ -205,6 +214,21 @@ int main(int argc, char* argv[]) try {
 
   int num_events = std::stoi(positional[0]);
   std::string output = positional[1];
+
+  /**
+   * Geant4 allows for up to 100 different integers to
+   * configure seed the RNG.
+   *
+   * The default RNG Geant4 uses only requires two integers
+   * to configure itself. We only want to worry about varying
+   * one integer so we map our input seed to two seeds and then
+   * pass those seeds into G4Random inside an array of length 100
+   * where the rest of the seeds are all 0.
+   */
+  long seeds[100] = {0};
+  seeds[0] = 2*seed;
+  seeds[1] = 2*seed+1;
+  G4Random::setTheSeeds(seeds);
 
 #if(DEBUG == 0)
   SilenceGeant silence;
