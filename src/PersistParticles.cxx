@@ -18,8 +18,8 @@ static void AbortEvent(const std::string& reason) {
 
 }
 
-PersistParticles::PersistParticles(const std::string& out_file, std::optional<double> filter_threshold, std::optional<double> bias_factor, const std::string& target, double depth, double beam, bool photons)
-  : out_{out_file.c_str(), "RECREATE"}, filter_threshold_{filter_threshold}, bias_factor_{bias_factor}, target_{target}, depth_{depth}, beam_{beam}, photons_{photons} {
+PersistParticles::PersistParticles(const std::string& out_file, std::optional<double> filter_threshold, std::optional<double> bias_factor, const std::string& target, double depth, double beam, bool photons, long seed)
+  : out_{out_file.c_str(), "RECREATE"}, filter_threshold_{filter_threshold}, bias_factor_{bias_factor}, target_{target}, depth_{depth}, beam_{beam}, photons_{photons}, seed_{seed} {
     out_.cd();
     events_ = new TTree("events","dimuon_events");
     events_->Branch("incident", &incident_);
@@ -43,7 +43,8 @@ PersistParticles::~PersistParticles() {
       target_,
       depth_,
       beam_,
-      photons_
+      photons_,
+      seed_
   );
   out_.WriteObject(&rh, "run");
   events_->Write();

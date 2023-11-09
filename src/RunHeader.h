@@ -26,6 +26,8 @@ class RunHeader {
   double beam_;
   /// whether photons were used (true) or electrons (false)
   bool photons_;
+  /// integer used to seed Geant4's RNG
+  long seed_;
   /// major version number used to produce this run
   int version_major_;
   /// minor version number used to produce this run
@@ -52,6 +54,7 @@ class RunHeader {
       const std::string& target,
       double depth,
       double beam,
-      bool photons
+      bool photons,
+      long seed
   );
 };

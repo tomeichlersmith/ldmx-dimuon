@@ -66,6 +66,8 @@ class PersistParticles {
   double beam_;
   /// whether photons were used (true) or electrons (false)
   bool photons_;
+  /// the integer used to seed Geant4's RNG
+  long seed_;
   /// flag keeping track of current stage of simulated event
   bool no_more_particles_above_threshold_;
  public:
@@ -75,7 +77,7 @@ class PersistParticles {
    * In addition to opening the output file, we create the event tree
    * and set up the branches we will write our member variables to.
    */
-  PersistParticles(const std::string& out_file, std::optional<double> filter_threshold, std::optional<double> bias_factor, const std::string& target, double depth, double beam, bool photons);
+  PersistParticles(const std::string& out_file, std::optional<double> filter_threshold, std::optional<double> bias_factor, const std::string& target, double depth, double beam, bool photons, long seed);
 
   /**
    * Print out the number of events with a dark brem compared to the requested number

@@ -11,7 +11,8 @@ RunHeader::RunHeader(
     const std::string& target,
     double depth,
     double beam,
-    bool photons
+    bool photons,
+    long seed
 )
   : tries_{tries},
     filter_{filter_threshold.has_value()},
@@ -21,6 +22,7 @@ RunHeader::RunHeader(
     depth_{depth},
     beam_{beam},
     photons_{photons},
+    seed_{seed},
     version_major_{version::MAJOR},
     version_minor_{version::MINOR},
     version_patch_{version::PATCH}
