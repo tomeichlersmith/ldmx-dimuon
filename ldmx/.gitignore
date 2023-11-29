@@ -1,0 +1,8 @@
+# hidden-home stuff from running a denv
+.**
+!.gitignore
+
+# cached python bytecode
+__pycache__
+**.pyc
+
