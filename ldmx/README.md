@@ -17,3 +17,12 @@ pip install -r requirements.txt
 ```
 If you see a "version not available" error, that means you are probably using a python
 version that is too old to use the versions listed in the requirements file.
+
+Personally, in order to obtain newer versions of python packages, I use 
+[denv](https://tomeichlersmith.github.io/denv/) to
+get an image with the latest release of python in it.
+```
+denv init python:3
+denv python3 -m pip install -r requirements
+denv jupyter lab
+```
