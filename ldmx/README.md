@@ -26,3 +26,28 @@ denv init python:3
 denv python3 -m pip install -r requirements
 denv jupyter lab
 ```
+
+## Project Steps
+
+### 0. Generate Dimuon Events
+Tom will handle this step and will put the resulting data files in the shared data space for analysis.
+
+### 1. Select Calibration Events
+We need to develop a selection that is _both_ simple _and_ selects "clean" events from the simulated events.
+One idea for selecting these events (as suggested by Jeremy) is to define a window of energy (both a minimum
+and maximum) such that a layer isn't "too quiet" or "too loud". The thresholds are TBD but the idea is to
+1. Get the total energy deposited in each layer.
+2. Count the number of layers within this energy window.
+3. Keep events where at least N layers lie within this energy window.
+
+This should select events where "enough" of the ECal is able to be calibrated by the event, mimicing a
+"calibration trigger" or some other analytical selection that would be necessary to prune messy events
+in data.
+
+### 2. Study Illumination Uniformity
+We want to know how uniformly the muons hit the different ECal cells. This can be studied in a multitude
+of ways. Some ideas are
+
+- Count muon-caused hits binned by cell in each layer
+- Distribution of truth muon polar and azimuthal angles relative to the beam direction
+- To check for bias, look at truth muon energy as a function of angles (or cell transverse position)
