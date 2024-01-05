@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -o errexit
+
+. /export/scratch/users/eichl008/ldmx/ldmx-sw/scripts/ldmx-env.sh
+ldmx use pro v3.3.3
+ldmx fire $@
