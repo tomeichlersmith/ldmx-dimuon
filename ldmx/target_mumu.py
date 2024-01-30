@@ -38,7 +38,6 @@ beam = sim.generators[0].energy*1000
 tagger = 0.95*beam
 minbrem = 0.625*beam
 
-
 sim.biasing_operators = [ bias_operators.GammaToMuPair('target', 1e6, minbrem) ]
 sim.actions = [
     filters.TaggerVetoFilter(thresh = tagger),
@@ -49,6 +48,7 @@ sim.actions = [
 
 params = [
     'beam', '8gev',
+    'target', 'physics',
     'tagger', str(int(tagger)),
     'minbrem', str(int(minbrem)),
     'run', f'{p.run:04d}'
