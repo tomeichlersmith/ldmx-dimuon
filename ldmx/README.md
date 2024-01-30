@@ -5,7 +5,10 @@ how dimuon events present themselves within the LDMX detector as designed.
 This directory is focused on this study: using ldmx-sw to study dimuon events.
 
 ### Table of Contents
-- `target_mumu.py`: ldmx-sw configuration script used to generate simulated data
+- `target_mumu.py`: ldmx-sw configuration script used to generate simulated dimuon conversion within thin "physics" target
+- `calib-hunk.py`: ldmx-sw config used to generate simulated dimuon conversion within thick "calib" target
+  - This config relies on the custom `detector.gdml` as well which is a copy of the GDML file that comes with
+    the ldmx-det-v14-8gev detector but with the additional calibration target inserted upstream of everything else
 - `requirements.txt`: list of primary requirements and their pinned versions for python-based analysis
 
 ### Start Up
