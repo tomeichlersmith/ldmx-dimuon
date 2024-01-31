@@ -6,3 +6,19 @@
 __pycache__
 **.pyc
 
+# local copies of GDML for detector.gdml development
+constants.gdml
+ecal.gdml
+ecal_motherboard5_assembly.gdml
+ecal_motherboard6_assembly.gdml
+ecal_support_box.gdml
+hcal.gdml
+magnet.gdml
+materials.gdml
+recoil.gdml
+scoring_planes.gdml
+tagger.gdml
+target.gdml
+trig_scint.gdml
+# gdml parsing logs from visualization
+gdml_parse.*
