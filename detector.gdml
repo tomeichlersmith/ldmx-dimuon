@@ -10,13 +10,7 @@
     &constants;  
 
     <!-- depth of calibration hunk in mm -->
-    <variable name="hunk_depth" value="100*mm" />
-
-    <!--
-      position of calibration hunk
-      it is placed just upstream of the furthest upstream detector component: Trigger Pad1
-    -->
-    <variable name="hunk_pos_z" value="trigger_pad1_z - 10*mm - hunk_depth/2" />
+    <variable name="hunk_depth" value="600*mm" />
 
     <!--
       Position of the tagger and recoil tracker envelopes with respect to
@@ -38,6 +32,12 @@
     -->
     <variable name="trig_scint_pos_z" 
       value="tagger_pos_z-trig_scint_area_envelope_z/2 -tagger_envelope_dz/2- clearance - 200" />
+
+    <!--
+      position of calibration hunk
+      it is placed just upstream of the furthest upstream detector component: Trigger Pad1
+    -->
+    <variable name="hunk_pos_z" value="trig_scint_pos_z - trig_scint_area_envelope_z - hunk_depth/2" />
     
     <!-- 
          Define all subdetector positions relative to the target.  
@@ -95,7 +95,7 @@
 
   <solids>
     <box lunit="mm" name="world_box" x="world_dim" y="world_dim" z="world_dim"/>
-    <box lunit="mm" name="calib_hunk_box" x="40" y="100" z="hunk_depth"/>
+    <box lunit="mm" name="calib_hunk_box" x="400" y="400" z="hunk_depth"/>
   </solids>
     
   <structure>
