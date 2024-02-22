@@ -18,7 +18,7 @@ from LDMX.Framework import ldmxcfg
 
 p = ldmxcfg.Process('dimuon')
 p.maxTriesPerEvent = 10000
-p.maxEvents = 10
+p.maxEvents = 10000
 #p.termLogLevel = 1
 #p.logFrequency = p.maxEvents // 100
 p.run = arg.run_number
@@ -40,7 +40,7 @@ sim.generators = [ generators.single_8gev_e_upstream_tagger() ]
 
 beam = sim.generators[0].energy*1000
 thresh = 0.5*beam
-sim.biasing_operators = [ bias_operators.GammaToMuPair('CalibHunk', 1e10, thresh) ]
+sim.biasing_operators = [ bias_operators.GammaToMuPair('CalibHunk', 1e6, thresh) ]
 sim.actions = [
     util.PartialEnergySorter(thresh),
     filters.MidShowerDiMuonBkgdFilter(thresh), # dimuon of at least half beam in CalorimeterRegion

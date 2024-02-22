@@ -9,6 +9,8 @@ This repo is focused on this study: using ldmx-sw to study dimuon events.
 - `calib-hunk.py`: ldmx-sw config used to generate simulated dimuon conversion within thick "calib" target
   - This config relies on the custom `detector.gdml` as well which is a copy of the GDML file that comes with
     the ldmx-det-v14-8gev detector but with the additional calibration target inserted upstream of everything else
+  - Biasing objects upstream of the target requires a patch to the underlying Geant4 biasing framework which is
+    available with version 4.2.1 of the ldmx/dev image or sha-39fc257 of the ldmx/pro image.
 - `requirements.txt`: list of primary requirements and their pinned versions for python-based analysis
 - `outside-ldmx-sw`: a Geant4+ROOT stand-alone program separate from ldmx-sw that just models a single material hunk and a downstream plane that is roughly the distance between the physics target and the ECal.
 
