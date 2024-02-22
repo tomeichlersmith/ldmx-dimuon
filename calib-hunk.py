@@ -32,7 +32,7 @@ sim = simulator.simulator('target_dimuon')
 sim.setDetector('ldmx-det-v14-8gev', True)
 sim.detector = 'detector.gdml'
 #sim.validate_detector = True
-sim.verbosity = 2
+#sim.verbosity = 2
 #sim.postInitCommands = [ '/run/verbose 2' ]
 sim.description = 'gamma conversion to muons in the target'
 sim.beamSpotSmear = [20., 80., 0.]
