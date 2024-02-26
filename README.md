@@ -29,7 +29,7 @@ Personally, in order to obtain newer versions of python packages, I use
 get an image with the latest release of python in it.
 ```
 denv init python:3
-denv python3 -m pip install -r requirements
+denv python3 -m pip install -r requirements.txt
 denv jupyter lab
 ```
 
