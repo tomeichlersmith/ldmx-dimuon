@@ -60,6 +60,41 @@ def as_sim_hit(events, branch):
 
 
 @ak.mixin_class(ak.behavior)
+class SimTrackerHit:
+    @property
+    def plane(self):
+        return self.id & 0xfff
+
+    @property
+    def subtype(self):
+        return (self.id >> 22) & 0xf
+
+    @property
+    def is_scoringplane(self):
+        return (self.subtype == 1)
+
+
+def as_sim_tracker_hit(events, branch):
+    form = {
+        m : events[f'{branch}.{m}_']
+        for m in [
+            'id', 'edep', 'trackID','pdgID'
+        ]
+    }
+    form.update({
+        'pos' : ak.zip({
+            c : events[f'{branch}.{c}_']
+            for c in ['x','y','z','time']
+        }, with_name='Vector4D'),
+        'momentum' : ak.zip({
+            c : events[f'{branch}.{c}_']
+            for c in ['energy','px','py','pz']
+        })
+    })
+    return ak.zip(form, depth_limit=2, with_name = SimTrackerHit.__name__)
+
+
+@ak.mixin_class(ak.behavior)
 class SimParticle:
     pass
 
@@ -96,7 +131,11 @@ def arrays(
     branches = {
         'EcalRecHits_dimuon' : as_rec_hit,
         'EcalSimHits_dimuon' : as_sim_hit,
-        'SimParticles_dimuon' : as_sim_particle
+        'SimParticles_dimuon' : as_sim_particle,
+        'TaggerSimHits_dimuon' : as_sim_tracker_hit,
+        'RecoilSimHits_dimuon' : as_sim_tracker_hit,
+        'EcalScoringPlaneHits_dimuon' : as_sim_tracker_hit,
+        'HcalScoringPlaneHits_dimuon' : as_sim_tracker_hit
     },
     remove_pass = True
 ):
