@@ -6,6 +6,9 @@
 __pycache__
 **.pyc
 
+# generated data files
+*.root
+
 # local copies of GDML for detector.gdml development
 constants.gdml
 ecal.gdml
