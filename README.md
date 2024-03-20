@@ -33,6 +33,20 @@ denv python3 -m pip install -r requirements.txt
 denv jupyter lab
 ```
 
+## Notes
+
+### More Support Samples
+- Unbiased Exclusive (pure EM: no PN, no muon prod), 1M events
+- Unbiased Inclusive (no restrictions), 1M events
+
+### Rate Questions
+- Fraction of events still rejected after biasing? i.e. estimate muon relative rate
+- Whats the max charge per bunch in lcls-ii mechanism?
+
+This would inform how large the bunches should be. For example, if the beam delivery rate is 1MHz
+and we want to get down to 10kHz being readout (i.e. a factor of 1/100), then we would want 10k electrons
+per bunch if the muon relative rate is 1e-6 (i.e. also a factor of 1/100).
+
 ## Project Steps
 
 ### 0. Generate Dimuon Events
