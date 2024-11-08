@@ -1,2 +1,8 @@
-jupyterlab==4.0.9
-scikit-hep==2023.10.1
+# metapackage holding uproot, awkward, hist, mplhep, etc...
+scikit-hep==2024.3.1
+# I like using a more recent version of the plotting helpers
+mplhep>=0.3.49
+# jupyterlab for interactive plotting and development
+jupyterlab==4.2.2
+# resource tracker plugin to keep an eye on memory usage
+jupyter-resource-usage==1.0.2
