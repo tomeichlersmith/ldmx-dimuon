@@ -8,6 +8,7 @@ import hist
 import upldmx
 import awkward as ak
 import numpy as np
+import uproot
 
 
 def title_bar(text=None, *, by_ldmx='Internal', exp_text_kw = dict(), lumitext_kw = dict(), **kwargs):
@@ -25,7 +26,17 @@ def fill(
     if hit_sl is not None:
         hits = hits[hit_sl(hits)]
 
-    tot_eot = ak.count(events.weight)/ak.sum(events.weight)*20*1e6
+    if 'physics-target' in fp:
+        tot_sim_eot = 20*1e6
+    else:
+        tot_sim_eot = ak.sum(
+            uproot.concatenate(
+                {fp:'LDMX_Run'},
+                filter_name = 'numTries_'
+            ).numTries_
+        )
+
+    tot_eot = ak.count(events.weight)/ak.sum(events.weight)*tot_sim_eot
     per_day = 1e12/tot_eot
 
     h = (
@@ -74,51 +85,96 @@ def draw_boxes():
             (-10,-40),20,80,
             facecolor='none',edgecolor='tab:red',linestyle='-',
             label='Target'
+        ),
+        mpl.patches.Rectangle(
+            (-1047.75,-177.8),2*1047.75,2*177.8,
+            facecolor='none',edgecolor='gray', linestyle=':',
+            label='Magnet Opening'
         )
     ]
     for b in boxes:
         plt.gca().add_patch(b)
 
-def hit_map(
-    cell_centers, counts, filename, tot_eot, *,
-    title = None
-):
-    plt.figure(figsize=(12,10))
-    plt.scatter(
-        cell_centers[0], cell_centers[1],
-        c = counts,
-        marker='H',
-        norm='log',
-        # vmax=1000
-    )
-    plt.colorbar(label='Count per Day')
-    plt.xlabel('X [mm]')
-    plt.ylabel('Y [mm]')
-    # plt.text(-260,255,'Highest Energy Hit Caused by Muons',ha='left',va='top',size='small')
-    title_bar(f'{tot_eot:.1e} EoT')
-    draw_boxes()
-    plt.legend(title=title, frameon=True)
-    plt.savefig(filename, bbox_inches='tight')
-    plt.close()
+
+import math
+
+def range_to_bins(vals, width):
+    _min = np.min(vals)-width/2
+    _max = np.max(vals)+width/2
+    num = int(math.ceil((_max-_min)/width))
+    return num, _min, _max
+
 
 def plot(
     o,
-    outdir
+    outdir,
+    note
 ):    
     # convert the array of IDs stored in the histogram to the array of cell centers
     # this needs to be done for each histogram because the lookup depends on the _order_
-    cell_centers = o['to_cell_center'](o['hist'].axes[0])
+    h = o['hist']
+    cell_centers = o['to_cell_center'](h.axes[0])
+
+    def hit_map(
+        sl, filename, *,
+        per_day = True,
+        **legend_kw
+    ):
+        values = h[:,'muon'].values()
+        if per_day:
+            values *= o['per_day']
+        art = (
+            hist.Hist.new
+            .Reg(*range_to_bins(cell_centers[0], 6.0), label='x / mm')
+            .Reg(*range_to_bins(cell_centers[1], 6.0), label='y / mm')
+            .Double()
+        ).fill(
+            cell_centers[0][sl],
+            cell_centers[1][sl],
+            weight = values[sl]
+        ).plot(
+            cmin=1,
+            #norm='log'
+        )
+        art.cbar.set_label(
+            'Count per Day'
+            if per_day else
+            'Count'
+        )
+        title_bar(f'{o["tot_eot"]:.1e} EoT')
+        draw_boxes()
+        plt.legend(**legend_kw)
+        plt.savefig(filename, bbox_inches='tight')
+        plt.close()
 
     hit_map(
-        cell_centers,
-        o['hist'][:,'muon'].values()*o['per_day'],
-        outdir / 'muon-hits.pdf',
-        o['tot_eot']
+        slice(None), outdir / 'muon-hits.pdf',
+        per_day = False,
+        title = 'All Muon Hits (%s)'%(note),
+        loc = 'lower center',
+        bbox_to_anchor = (0.5,1.05)
     )
 
-    o['hist'][sum,:].plot(density=True)
+    cid = np.array(o['hist'].axes[0])
+    layer = (cid >> 17) & 0x3f
+    keep = (layer == 6) #|(layer == 7)
+    hit_map(
+        keep, outdir / 'muon-hits-layer-6.pdf',
+        per_day = False,
+        title = 'Layer 6 Muon Hits (%s)'%(note),
+        loc='lower center',
+        bbox_to_anchor=(0.5,1.05)
+    )
+
+    h[sum,:].plot(density=True)
     plt.ylabel('Hit Fraction')
     title_bar(f'{o["tot_eot"]:.1e} EoT')
+    plt.annotate(
+        note,
+        xy=(0.95,0.95),
+        xycoords='axes fraction',
+        ha='right', va='top'
+    )
     plt.savefig(outdir / 'hit-fraction-by-particle-cause.pdf')
     plt.close()
 
@@ -126,9 +182,18 @@ def plot(
 base = Path('/local/cms/user/eichl008/ldmx/dimuon-calibration')
 
 samples = {
-    'physics-8gev-smear' : str(base / 'physics-target' / 'with-beam-smear' / '*.root'),
-    'physics-8gev-point' : str(base / 'physics-target' / 'no-smear' / '*.root'),
-    'calib-8gev' : str(base / 'calib-target' / '*.root'),
+    'physics-8gev-smear' : {
+        'filepath': str(base / 'physics-target' / 'with-beam-smear' / '*.root'),
+        'note' : 'Physics Target; 8GeV'
+    },
+    'physics-8gev-point' : {
+        'filepath': str(base / 'physics-target' / 'no-smear' / '*.root'),
+        'note': 'Physics Target; 8GeV; Point'
+    },
+    'calib-8gev' : {
+        'filepath': str(base / 'calib-target' / '*.root'),
+        'note': 'Calib Target; 8GeV'
+    },
 }
 
 def main():
@@ -145,11 +210,11 @@ def main():
         with open(args.hist, 'rb') as f:
             o = pickle.load(f)
     else:
-        o = fill(samples[args.sample])
+        o = fill(samples[args.sample]['filepath'])
         with open(args.hist, 'wb') as f:
             pickle.dump(o, f)
 
-    plot(o, args.hist.parent)
+    plot(o, args.hist.parent, samples[args.sample]['note'])
 
 
 if __name__ == '__main__':
