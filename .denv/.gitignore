@@ -1,0 +1,5 @@
+# ignore everything in this directory
+*
+# except the config which folks might want to share
+# across many computers
+!config
