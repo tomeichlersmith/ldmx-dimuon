@@ -123,24 +123,35 @@ def plot(
         values = h[:,'muon'].values()
         if per_day:
             values *= o['per_day']
-        art = (
-            hist.Hist.new
-            .Reg(*range_to_bins(cell_centers[0], 6.0), label='x / mm')
-            .Reg(*range_to_bins(cell_centers[1], 6.0), label='y / mm')
-            .Double()
-        ).fill(
-            cell_centers[0][sl],
-            cell_centers[1][sl],
-            weight = values[sl]
-        ).plot(
-            cmin=1,
-            #norm='log'
-        )
-        art.cbar.set_label(
+        zlabel = (
             'Count per Day'
             if per_day else
             'Count'
         )
+#        art = (
+#            hist.Hist.new
+#            .Reg(*range_to_bins(cell_centers[0], 6.0), label='x / mm')
+#            .Reg(*range_to_bins(cell_centers[1], 6.0), label='y / mm')
+#            .Double()
+#        ).fill(
+#            cell_centers[0][sl],
+#            cell_centers[1][sl],
+#            weight = values[sl]
+#        ).plot(
+#            cmin=1,
+#            #norm='log'
+#        )
+#        art.cbar.set_label(zlabel)
+        plt.figure(figsize=(12,10))
+        art = plt.scatter(
+            cell_centers[0][sl],
+            cell_centers[1][sl],
+            c = values[sl],
+            marker = 'H'
+        )
+        plt.xlabel('x / mm')
+        plt.ylabel('y / mm')
+        plt.colorbar(art, label=zlabel)
         title_bar(f'{o["tot_eot"]:.1e} EoT')
         draw_boxes()
         plt.legend(**legend_kw)
