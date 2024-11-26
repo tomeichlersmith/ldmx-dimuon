@@ -39,20 +39,26 @@ def fill(
     tot_eot = ak.count(events.weight)/ak.sum(events.weight)*tot_sim_eot
     per_day = 1e12/tot_eot
 
+    hits['muon'] = hits.has_contrib(13)|hits.has_contrib(-13)
+    hits['electron'] = hits.has_contrib(11)
+    hits['other'] = ~(hits.muon|hits.electron)
+    # energy of a MIP is ~0.13MeV, require hits to have at least 0.1 of a MIP
+    hits['readout'] = (hits.edep > 0.1*0.13)
+
     h = (
         hist.Hist.new
         .IntCategory([], growth=True, name='cellid')
         .StrCategory(['electron','muon','other'],name='cause',label='Particle Causing Hit')
         .Double()
     ).fill(
-        cellid = ak.flatten(hits[hits.has_contrib(13)|hits.has_contrib(-13)].id),
+        cellid = ak.flatten(hits[hits.muon&hits.readout].id),
         cause = 'muon'
     ).fill(
-        cellid = ak.flatten(hits[hits.has_contrib(11)].id),
+        cellid = ak.flatten(hits[hits.electron&hits.readout].id),
         cause = 'electron',
     ).fill(
         cellid = ak.flatten(
-            hits[~(hits.has_contrib(13)|hits.has_contrib(-13)|hits.has_contrib(11))].id
+            hits[hits.other&hits.readout].id
         ),
         cause = 'other'
     )
