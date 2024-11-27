@@ -14,6 +14,9 @@ when I get around to validating that this stuff works.
     the ldmx-det-v14-8gev detector but with the additional calibration target inserted upstream of everything else
   - Biasing objects upstream of the target requires a patch to the underlying Geant4 biasing framework which is
     available with version 4.2.1 of the ldmx/dev image or sha-39fc257 of the ldmx/pro image.
+  - Naively trying to jump up to v4.1.1 from this commit (which is 8 commits after v3.3.5)
+    makes the simulation not work anymore. I'm probably mis-configuring, but instead of
+    spending time figuring that out, I'm just generating on this commit.
 
 ## Notes
 
@@ -21,3 +24,13 @@ when I get around to validating that this stuff works.
 - Unbiased Inclusive (no restrictions), 1M events
 - 4GeV versions of these samples as well
 
+
+## Production
+Since the calibration target production is so fast, I am avoiding using
+the full cluster and instead just using `parallel` on a single machine.
+
+```
+parallel \
+  denv fire config-calib-target.py {} &> logs/calib-target-{}.log \
+  ::: {1..250}
+```
