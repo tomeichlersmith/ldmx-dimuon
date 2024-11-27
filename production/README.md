@@ -30,7 +30,7 @@ Since the calibration target production is so fast, I am avoiding using
 the full cluster and instead just using `parallel` on a single machine.
 
 ```
-parallel \
-  denv fire config-calib-target.py {} &> logs/calib-target-{}.log \
+parallel --joblog batch-name.log \
+  'denv fire config-calib-target.py {} &> logs/calib-target-{}.log' \
   ::: {1..250}
 ```
