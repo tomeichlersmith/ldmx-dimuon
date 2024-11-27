@@ -63,6 +63,19 @@ def fill(
         cause = 'other'
     )
 
+    nhits = (
+        hist.Hist.new
+        .Integer(0,34,name='layer')
+        .Reg(501,-0.5,500.5,name='nhits')
+        .Double()
+    )
+    layer = (hits.id >> 17) & 0x3f
+    for ilayer in range(34):
+        nhits.fill(
+            layer = ilayer,
+            nhits = ak.sum(hits.muon&hits.readout&(layer==ilayer), axis=1)
+        )
+
     # define a lookup table (LUT) for hit IDs to transverse cell centers
     # this only needs to be redefined if the `hits` array changes because there might
     # be an ID in the new selection that wasn't in the old
@@ -74,6 +87,7 @@ def fill(
 
     return {
         'hist': h,
+        'nhits_h': nhits,
         'to_cell_center': np.vectorize(id_to_pos_lut.get),
         'tot_eot': tot_eot,
         'per_day': per_day
@@ -194,6 +208,22 @@ def plot(
     )
     plt.savefig(outdir / 'hit-fraction-by-particle-cause.pdf')
     plt.close()
+
+    o['nhits_h'][hist.loc(6),:].plot()
+    plt.xlim(xmin=-0.5,xmax=10.5)
+    plt.yscale('log')
+    plt.ylabel('Event Count')
+    plt.xlabel('N Hits in Layer 6')
+    title_bar(f'{o["tot_eot"]:.1e} EoT')
+    plt.annotate(
+        note,
+        xy=(0.95,0.95),
+        xycoords='axes fraction',
+        ha='right', va='top'
+    )
+    plt.savefig(outdir / 'n-hits-per-event-layer-6.pdf')
+    plt.close()
+
 
 
 base = Path('/local/cms/user/eichl008/ldmx/dimuon-calibration')
