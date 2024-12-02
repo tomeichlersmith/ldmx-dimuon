@@ -103,6 +103,7 @@ class Analysis:
             with open(self.output / 'hist.pkl', 'wb') as f:
                 pickle.dump(o, f)
 
+        self.output.mkdir(exist_ok=True, parents=True)
         self.plot(o)
 
     
