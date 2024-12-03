@@ -1,8 +1,10 @@
 import awkward as ak
 import numpy as np
 import uproot
+import upldmx
+import hist
 
-from analysis import Analysis, title_bar, draw_boxes
+from analysis import Analysis, title_bar, draw_boxes, plt, mpl
 
 import math
 
@@ -15,17 +17,20 @@ def range_to_bins(vals, width):
 
 class ImpactCoverage(Analysis):
     def fill(self):
-        events = upldmx.arrays(self.filepath)
+        events = upldmx.arrays(
+            self.filepath,
+            branches = {
+                'EcalSimHits_dimuon' : upldmx.as_sim_hit,
+            }
+        )
         hits = events.EcalSimHits
-        if hit_sl is not None:
-            hits = hits[hit_sl(hits)]
     
-        if 'physics-target' in fp:
+        if 'physics-target' in self.filepath:
             tot_sim_eot = 20*1e6
         else:
             tot_sim_eot = ak.sum(
                 uproot.concatenate(
-                    {fp:'LDMX_Run'},
+                    {self.filepath:'LDMX_Run'},
                     filter_name = 'numTries_'
                 ).numTries_
             )
@@ -126,7 +131,8 @@ class ImpactCoverage(Analysis):
                 cell_centers[0][sl],
                 cell_centers[1][sl],
                 c = values[sl],
-                marker = 'H'
+                marker = 'H',
+                norm = 'log'
             )
             plt.xlabel('x / mm')
             plt.ylabel('y / mm')
@@ -138,7 +144,7 @@ class ImpactCoverage(Analysis):
             plt.close()
     
         hit_map(
-            slice(None), self.output / 'muon-hits.pdf',
+            slice(None), self.output / f'{self.sample}-muon-hits.pdf',
             per_day = False,
             title = 'All Muon Hits (%s)'%(self.note),
             loc = 'lower center',
@@ -149,7 +155,7 @@ class ImpactCoverage(Analysis):
         layer = (cid >> 17) & 0x3f
         keep = (layer == 6) #|(layer == 7)
         hit_map(
-            keep, self.output / 'muon-hits-layer-6.pdf',
+            keep, self.output / f'{self.sample}-muon-hits-layer-6.pdf',
             per_day = False,
             title = 'Layer 6 Muon Hits (%s)'%(self.note),
             loc='lower center',
@@ -165,7 +171,7 @@ class ImpactCoverage(Analysis):
             xycoords='axes fraction',
             ha='right', va='top'
         )
-        plt.savefig(self.output / 'hit-fraction-by-particle-cause.pdf')
+        plt.savefig(self.output / f'{self.sample}-hit-fraction-by-particle-cause.pdf')
         plt.close()
     
         o['nhits_h'][hist.loc(6),:].plot()
@@ -180,7 +186,7 @@ class ImpactCoverage(Analysis):
             xycoords='axes fraction',
             ha='right', va='top'
         )
-        plt.savefig(self.output / 'n-hits-per-event-layer-6.pdf')
+        plt.savefig(self.output / f'{self.sample}-n-hits-per-event-layer-6.pdf')
         plt.close()
 
 

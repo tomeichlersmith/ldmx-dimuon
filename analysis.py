@@ -76,7 +76,7 @@ class Analysis:
             help='output directory to store histograms and plots'
         )
         parser.add_argument(
-            '--sample', type=str,
+            '--sample', type=str, choices = list(samples.keys()),
             help='name of sample to analyze'
         )
         parser.add_argument(
@@ -94,7 +94,9 @@ class Analysis:
         self.filepath = samples[self.sample]['filepath']
         self.note = samples[self.sample]['note']
 
-        if self.relot:
+        self.output.mkdir(exist_ok=True, parents=True)
+
+        if self.replot:
             with open(self.output / 'hist.pkl', 'rb') as f:
                 o = pickle.load(f)
         else:
@@ -103,7 +105,6 @@ class Analysis:
             with open(self.output / 'hist.pkl', 'wb') as f:
                 pickle.dump(o, f)
 
-        self.output.mkdir(exist_ok=True, parents=True)
         self.plot(o)
 
     
