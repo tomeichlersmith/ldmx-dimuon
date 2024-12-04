@@ -16,6 +16,17 @@ def range_to_bins(vals, width):
 
 
 class ImpactCoverage(Analysis):
+
+    @classmethod
+    def parser(cls):
+        parser = super().parser()
+        parser.add_argument(
+            '--per-day', action='store_true',
+            help='scale counts to approximate number per day'
+        )
+        return parser
+
+
     def fill(self):
         events = upldmx.arrays(
             self.filepath,
@@ -145,7 +156,7 @@ class ImpactCoverage(Analysis):
     
         hit_map(
             slice(None), self.output / f'{self.sample}-muon-hits.pdf',
-            per_day = False,
+            per_day = self.per_day,
             title = 'All Muon Hits (%s)'%(self.note),
             loc = 'lower center',
             bbox_to_anchor = (0.5,1.05)
@@ -156,7 +167,7 @@ class ImpactCoverage(Analysis):
         keep = (layer == 6) #|(layer == 7)
         hit_map(
             keep, self.output / f'{self.sample}-muon-hits-layer-6.pdf',
-            per_day = False,
+            per_day = self.per_day,
             title = 'Layer 6 Muon Hits (%s)'%(self.note),
             loc='lower center',
             bbox_to_anchor=(0.5,1.05)

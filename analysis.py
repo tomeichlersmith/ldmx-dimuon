@@ -69,7 +69,7 @@ samples = {
 class Analysis:
 
     @classmethod
-    def base_parser(cls):
+    def parser(cls):
         parser = argparse.ArgumentParser()
         parser.add_argument(
             'output', type=Path,
@@ -88,7 +88,7 @@ class Analysis:
 
     def __init__(self, args = None):
         if args is None:
-            args = self.__class__.base_parser().parse_args()
+            args = self.__class__.parser().parse_args()
 
         self.__dict__ = vars(args)
         self.filepath = samples[self.sample]['filepath']
