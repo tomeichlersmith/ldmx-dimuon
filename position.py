@@ -113,6 +113,7 @@ class ImpactCoverage(Analysis):
         def hit_map(
             sl, filename, *,
             per_day = True,
+            by_ldmx = 'Internal',
             **legend_kw
         ):
             values = h[:,'muon'].values()
@@ -148,7 +149,7 @@ class ImpactCoverage(Analysis):
             plt.xlabel('x / mm')
             plt.ylabel('y / mm')
             plt.colorbar(art, label=zlabel)
-            title_bar(f'{o["tot_eot"]:.1e} EoT')
+            title_bar(f'{o["tot_eot"]:.1e} EoT', by_ldmx=by_ldmx)
             draw_boxes()
             plt.legend(**legend_kw)
             plt.savefig(filename, bbox_inches='tight')
@@ -170,7 +171,8 @@ class ImpactCoverage(Analysis):
             per_day = self.per_day,
             title = 'Layer 6 Muon Hits (%s)'%(self.note),
             loc='lower center',
-            bbox_to_anchor=(0.5,1.05)
+            bbox_to_anchor=(0.5,1.05),
+            by_ldmx = 'Simulation'
         )
     
         h[sum,:].plot(density=True)
