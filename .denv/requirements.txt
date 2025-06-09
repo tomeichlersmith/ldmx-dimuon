@@ -6,3 +6,7 @@ mplhep>=0.3.49
 jupyterlab==4.2.2
 # resource tracker plugin to keep an eye on memory usage
 jupyter-resource-usage==1.0.2
+# multi-processing with dask
+dask==2024.6.1
+dask_histogram==2024.3.0
+dask_awkward==2024.6.0
