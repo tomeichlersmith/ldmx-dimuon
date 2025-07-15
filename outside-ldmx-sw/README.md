@@ -23,6 +23,9 @@ just config build # configures the build and compiles the code
 just xsec-calc -h # run xsec-calc (prints help)
 just simulate -h # run simulation (prints help)
 ```
+The [ana](ana) subdirectory contains a Python module which can be used to load the run parameters
+and events into memory for use with `awkward` arrays. It uses `uproot` to do this loading from a
+ROOT file.
 
 ## References
 - [Dimuon production by laser-wakefield accelerated electrons](https://journals.aps.org/prab/pdf/10.1103/PhysRevSTAB.12.111301)
