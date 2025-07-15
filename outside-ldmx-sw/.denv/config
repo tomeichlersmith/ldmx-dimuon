@@ -1,4 +1,0 @@
-denv_name="dimuon"
-denv_image="ldmx/dev:latest"
-denv_shell="/bin/bash -i"
-denv_mounts=""

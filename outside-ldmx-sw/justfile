@@ -1,0 +1,26 @@
+@_default:
+    just --list --justfile {{ justfile() }}
+
+# initialize a denv for this repository
+init:
+    denv init ldmx/dev:latest --clean-env
+
+# configure the build
+config:
+    denv cmake -B build -S .
+
+# compile
+build:
+    denv cmake --build build
+
+# run the xsec calculation
+xsec-calc *args:
+    denv ./build/dimuon-xsec-calc {{ args }}
+
+# run the simulation
+simulate *args:
+    denv ./build/dimuon-simulate {{ args }}
+
+# generate samples in pairs by target thickness
+gen-samples *args:
+    denv ./app/gen-samples {{ args }}

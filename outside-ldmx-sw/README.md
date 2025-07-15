@@ -14,13 +14,14 @@ and share a pre-built version of Geant4.
 In addition, this denv uses the LDMX container image so the results are for the specific version
 of Geant4 built there.
 
-Inside the denv, we have a few pre-defined aliases (in `.bash_aliases`) that make the compiling
-and running a bit more ergonomic. After cloning this repository, one could enter the denv and
-`run` this project to start calculating cross sections.
+Similar to ldmx-sw, we use [just](https://just.systems/man/en/) to share command recipets.
+If you don't want to install `just`, you can view the [justfile](justfile) for the specific
+commands referenced by name.
 ```
-denv
-xsec-calc -h
-simulate -h
+just init # once per machine, defines the denv
+just config build # configures the build and compiles the code
+just xsec-calc -h # run xsec-calc (prints help)
+just simulate -h # run simulation (prints help)
 ```
 
 ## References
@@ -59,4 +60,9 @@ For example
 depth=$(python -c 'print(X*3.50259)')
 ./build/dimuon-simulate --depth ${depth} 10000 inclusive_X.root
 ./build/dimuon-simulate --depth ${depth} --bias 1e4 --filter 1000 1000000 dimuon_X.root
+```
+This pair of simulations is coded into the [app/gen-samples](app/gen-samples) script
+and they are both run at once.
+```
+just gen-samples -h
 ```
