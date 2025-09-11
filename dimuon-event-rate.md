@@ -6,6 +6,7 @@ The equivalent EoT for the different simulation samples (and how its calculated)
 
 (This is output from running the `eot.py` script which scans all of the files in the sample.)
 
+```
 physics-8gev-smear with 20 runs
 Sim EoT    S = 2.0e+07
 N Events   N = 1.3e+05
@@ -19,6 +20,7 @@ N Events   N = 2.5e+06
 Weight Sum W = 1.5e+01
 Avg Bias B = N/W = 1.7e+05
 EoT  = B * S = 1.4e+12
+```
 
 We assume that (for one electron per bunch `mu=1`) we can collect 1e12 EoT per day.[^1]
 
