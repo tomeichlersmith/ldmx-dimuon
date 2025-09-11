@@ -34,13 +34,16 @@ Target  | Rate per EoT | Events per mu=1 Day
 Physics | 7.6e-9       | 7600
 Calib   | 1.7e-6       | 1.8e6
 
-For the calibration target, we will run with a higher number of electrons in each bunch since
+For the calibration target, we could run with a higher number of electrons in each bunch since
 most electrons will just be swallowed by the thicker target.
 We don't want to overwhelm our DAQ system which has a rate limit of ~ 25 kHz, so the maximum
-number of electrons per bunch we would target is[^2]
+number of electrons per bunch we would target is approximately[^2]
 ```
 calib mu = (25 kHz) / ((calib rate) * 37 MHz) = 380
 ```
+But notice that even without this increase in the number of electrons per bunch, we still see an
+increase in the di-muon event rate of ~200 (1.7e-6/7.6e-9) which means we could also just stay with
+the mu=1 bunches and still collect a good sample of calibration events within a day.
 
 
 [^2]: https://numbat.dev/?q=let+calib_rate+%3D+2.5e6%2F1.4e12%E2%8F%8E25+kHz+%2F+%28calib_rate+*+37+MHz%29%E2%8F%8E
