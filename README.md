@@ -28,6 +28,13 @@ denv jupyter lab
 
 ## Notes
 
+Another study was done by Thuwaragesh Jayachandran as a part of their SURF summer project.
+[ThuwarageshJ/SURF-24-25](https://github.com/ThuwarageshJ/SURF-24-25)
+While this study was focused on the potential for using these di-muons to search for dark matter,
+it does a good job of also studying the background rate as a function of target thickness,
+kinetic energy, and outgoing angle relative to the beam which are aspects that are helpful
+for us to know for calibration as well.
+
 ### Rate Questions
 - Fraction of events still rejected after biasing? i.e. estimate muon relative rate
 - Whats the max charge per bunch in lcls-ii mechanism?
